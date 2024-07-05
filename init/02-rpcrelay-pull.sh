@@ -12,10 +12,5 @@ echo "RPC Relay version: ${RPC_RELAY_VERSION}"
 export RPC_RELAY_DOCKER_IMAGE="ghcr.io/hashgraph/hedera-json-rpc-relay:${RPC_RELAY_VERSION}"
 
 # run the RPC relay via its docker image
-docker run \
-  --rm \
-  --publish 7546:7546 \
-  --publish 8546:8546 \
-  --publish 8547:8547 \
-  --env-file ../.rpcrelay.env \
+docker pull \
   "${RPC_RELAY_DOCKER_IMAGE}"

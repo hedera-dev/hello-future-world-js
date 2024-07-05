@@ -11,12 +11,13 @@ const {
 const dotenv = require('dotenv');
 
 const DEFAULT_VALUES = {
+    dotEnvFilePath: path.resolve(__dirname, '../.env'),
     rpcUrl: 'http://localhost:7546/',
     numAccounts: 1,
     numAccountsMinimum: 1,
 };
 
-async function init() {
+async function initDotEnvForApp() {
     // prompt for inputs
     const {
         allowOverwrite1stChar,
@@ -26,7 +27,7 @@ async function init() {
     // write `.env` file if instructed
     if (allowOverwrite1stChar === 'y') {
         console.log('OK, overwriting .env file');
-        const fileName = path.resolve('..', '.env');
+        const fileName = DEFAULT_VALUES.dotEnvFilePath;
         await fs.writeFile(fileName, dotEnvText);
     } else {
         console.log('OK, leaving current .env file as it was');
@@ -56,7 +57,7 @@ OPERATOR_ACCOUNT_EVM_ADDRESS=${operatorAccount.evmAddress}
 OPERATOR_ACCOUNT_ID=${operatorAccount.id}
 
 # BIP-39 seed phrase
-SEED_PHRASE=${seedPhrase}
+SEED_PHRASE="${seedPhrase}"
 NUM_ACCOUNTS=${numAccounts}
 
 ${accountsOutput}
@@ -69,6 +70,7 @@ RPC_URL=${rpcUrl}
 
 async function promptInputs() {
     // read in initial values for env variables that have been set
+    dotenv.config({ path: DEFAULT_VALUES.dotEnvFilePath });
     const {
         OPERATOR_ACCOUNT_PRIVATE_KEY,
         OPERATOR_ACCOUNT_ID,
@@ -78,8 +80,8 @@ async function promptInputs() {
     } = process.env;
 
     let operatorAccount;
-    let operatorId = OPERATOR_ACCOUNT_PRIVATE_KEY;
-    let operatorKey = OPERATOR_ACCOUNT_ID;
+    let operatorKey = OPERATOR_ACCOUNT_PRIVATE_KEY;
+    let operatorId = OPERATOR_ACCOUNT_ID;
     let seedPhrase = SEED_PHRASE;
     let numAccounts = NUM_ACCOUNTS;
     let accounts = [];
@@ -308,4 +310,4 @@ async function promptInputs() {
     };
 }
 
-init();
+initDotEnvForApp();
