@@ -1,6 +1,8 @@
 #!/bin/bash
 
-source ../.env
+DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+source ${DIR}/../.env
 curl "${RPC_URL}" \
     -X POST \
     -H "Content-Type: application/json" \

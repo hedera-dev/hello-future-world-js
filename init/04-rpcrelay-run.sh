@@ -1,5 +1,7 @@
 #!/bin/bash
 
+DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 # get specific tag name for latest RPC relay
 export RPC_RELAY_VERSION=$( curl -L \
   -H "Accept: application/vnd.github+json" \
@@ -17,5 +19,5 @@ docker run \
   --publish 7546:7546 \
   --publish 8546:8546 \
   --publish 8547:8547 \
-  --env-file ../.rpcrelay.env \
+  --env-file ${DIR}/../.rpcrelay.env \
   "${RPC_RELAY_DOCKER_IMAGE}"

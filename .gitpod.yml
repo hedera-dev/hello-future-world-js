@@ -1,0 +1,32 @@
+# Configuration for gitpod.io
+# To run on gitpod open https://gitpod.io/?autostart=false# followed by the github URL of your project
+# e.g. https://gitpod.io/?autostart=false#https://github.com/hedera-dev/hedera-tutorial-demo-base-template
+tasks:
+  - name: "rpcrelay_pull"
+    init: |
+      bash ./init/03-rpcrelay-pull.sh
+  - name: "rpcrelay_run"
+    init: |
+      gp sync-await main
+      bash ./init/04-rpcrelay-run.sh
+  - name: "main"
+    init: |
+      (
+        set -e
+        export RPC_URL=$( gp url 7546 )
+        bash ./init/00-main.sh
+        gp sync-done main
+      )
+ports:
+  - name: "rpcrelay"
+    onOpen: notify
+    port: 7546
+    visibility: public
+  - name: "rpcrelay_ws"
+    onOpen: ignore
+    port: 8546
+    visibility: public
+  - name: "rpcrelay_admin"
+    onOpen: ignore
+    port: 8547
+    visibility: public
