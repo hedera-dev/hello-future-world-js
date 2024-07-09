@@ -79,7 +79,6 @@ async function queryAccountByEvmAddress(evmAddress) {
         const accountFetch = await fetch(accountFetchApiUrl);
         const accountObj = await accountFetch.json();
         const account = accountObj;
-        console.log(account);
         accountId = account?.account;
         accountBalance = account?.balance?.balance;
         accountEvmAddress = account?.evm_address;
@@ -106,7 +105,6 @@ async function queryAccountByPrivateKey(privateKeyStr) {
         const accountFetch = await fetch(accountFetchApiUrl);
         const accountObj = await accountFetch.json();
         const account = accountObj?.accounts[0];
-        console.log(account);
         accountId = account?.account;
         accountBalance = account?.balance?.balance;
         accountEvmAddress = account?.evm_address;
@@ -151,7 +149,6 @@ async function promptInputs() {
     dotenv.config({ path: DEFAULT_VALUES.dotEnvFilePath });
     const {
         OPERATOR_ACCOUNT_PRIVATE_KEY,
-        OPERATOR_ACCOUNT_ID,
         SEED_PHRASE,
         NUM_ACCOUNTS,
         RPC_URL,
@@ -159,7 +156,6 @@ async function promptInputs() {
 
     let operatorAccount;
     let operatorKey = OPERATOR_ACCOUNT_PRIVATE_KEY;
-    let operatorId = OPERATOR_ACCOUNT_ID;
     let seedPhrase = SEED_PHRASE;
     let numAccounts = NUM_ACCOUNTS;
     let accounts = [];
@@ -180,41 +176,24 @@ async function promptInputs() {
         restart = false;
         let use1stAccountAsOperator = false;
 
-        // prompt for operator account
+        // prompt for operator account private key
         // - user may opt for "none" in which case the 1st account
-        //   generated from the seed phrase will be used instead
-        // - user may opt to specify an account ID + account private key
-        // - if account ID + private key are specified,
-        //   validation will be performed
-        console.log('Enter your operator account (ECDSA) ID');
-        if (operatorId) {
-            console.log(`Current: "${operatorId}"`);
+        //   generated from the BIP-39 seed phrase will be used instead
+        // - user may opt to specify an account private key
+        // - if private key is specified, validation will be performed,
+        //   and account ID will be obtained from there (no need to ask user to input)
+        console.log('Enter your operator account (ECDSA) private key');
+        if (operatorKey) {
+            console.log(`Current: "${operatorKey}"`);
             console.log('(enter blank to re-use the above value)');
         } else {
-            console.log('e.g. "0.0.12345"');
+            console.log('e.g. "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"');
         }
-        console.log('(enter "none" to use first account from BIP-39 seed phrase)');
-        const inputOperatorId = await rlPrompt.question('> ');
-        if (inputOperatorId === 'none') {
+        console.log('(enter "none" to use first account from BIP-39 seed phrase as operator account)');
+        const inputOperatorKey = await rlPrompt.question('> ');
+        if (inputOperatorKey === 'none') {
             use1stAccountAsOperator = true;
         } else {
-            operatorId = inputOperatorId || operatorId;
-            if (!operatorId) {
-                console.error('Must specify operator ID');
-                restart = true;
-                continue;
-            }
-        }
-
-        if (!use1stAccountAsOperator) {
-            console.log('Enter your operator account (ECDSA) private key');
-            if (operatorKey) {
-                console.log(`Current: "${operatorKey}"`);
-                console.log('(enter blank to re-use the above value)');
-            } else {
-                console.log('e.g. "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"');
-            }
-            const inputOperatorKey = await rlPrompt.question('> ');
             operatorKey = inputOperatorKey || operatorKey;
             if (!operatorKey) {
                 console.error('Must specify operator account private key');
@@ -314,8 +293,7 @@ async function promptInputs() {
             console.log(`Please ensure that you have funded ${accounts[0].evmAddress}`);
             console.log('If this account has not yet been created or funded, you may do so via https://faucet.hedera.com');
             console.log('(Simply enter a blank value to when this account is ready)');
-            const inputOperatorId = await rlPrompt.question('> ');
-            operatorId = inputOperatorId;
+            await rlPrompt.question('> '); // discard the response, no use for it
 
             // validate operator account details
             try {
