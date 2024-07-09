@@ -68,6 +68,84 @@ RPC_URL=${rpcUrl}
     return output;
 }
 
+async function queryAccountByEvmAddress(evmAddress) {
+    let accountId;
+    let accountBalance;
+    let accountEvmAddress;
+    const accountFetchApiUrl =
+        `https://testnet.mirrornode.hedera.com/api/v1/accounts/${evmAddress}?limit=1&order=asc&transactiontype=cryptotransfer&transactions=false`;
+    console.log('Fetching: ', accountFetchApiUrl);
+    try {
+        const accountFetch = await fetch(accountFetchApiUrl);
+        const accountObj = await accountFetch.json();
+        const account = accountObj;
+        console.log(account);
+        accountId = account?.account;
+        accountBalance = account?.balance?.balance;
+        accountEvmAddress = account?.evm_address;
+    } catch (ex) {
+        // do nothing
+    }
+    return {
+        accountId,
+        accountBalance,
+        accountEvmAddress,
+    }
+}
+
+async function queryAccountByPrivateKey(privateKeyStr) {
+    const privateKeyObj = PrivateKey.fromStringECDSA(privateKeyStr);
+    const publicKey = `0x${ privateKeyObj.publicKey.toStringRaw() }`;
+    let accountId;
+    let accountBalance;
+    let accountEvmAddress;
+    const accountFetchApiUrl =
+        `https://testnet.mirrornode.hedera.com/api/v1/accounts?account.publickey=${publicKey}&balance=true&limit=1&order=desc`;
+    console.log('Fetching: ', accountFetchApiUrl);
+    try {
+        const accountFetch = await fetch(accountFetchApiUrl);
+        const accountObj = await accountFetch.json();
+        const account = accountObj?.accounts[0];
+        console.log(account);
+        accountId = account?.account;
+        accountBalance = account?.balance?.balance;
+        accountEvmAddress = account?.evm_address;
+    } catch (ex) {
+        // do nothing
+    }
+    return {
+        accountId,
+        accountBalance,
+        accountEvmAddress,
+    }
+}
+
+async function getUsableAccount(privateKeyStr, evmAddress) {
+    let account;
+    if (evmAddress) {
+        account = await queryAccountByEvmAddress(evmAddress);
+    } else {
+        account = await queryAccountByPrivateKey(privateKeyStr);
+    }
+    let {
+        accountId,
+        accountBalance,
+        accountEvmAddress,
+    } = account;
+    if (!accountId) {
+        throw new Error('Must specify an account which exists, and can be derived from the specified private key');
+    }
+    if (!accountBalance) {
+        throw new Error('Must specify an account which is funded');
+    }
+
+    return {
+        privateKey: privateKeyStr,
+        evmAddress: accountEvmAddress || '',
+        id: accountId,
+    };
+}
+
 async function promptInputs() {
     // read in initial values for env variables that have been set
     dotenv.config({ path: DEFAULT_VALUES.dotEnvFilePath });
@@ -145,35 +223,14 @@ async function promptInputs() {
             }
 
             // validate operator account details
-            const operatorPrivateKeyObj = PrivateKey.fromStringECDSA(operatorKey);
-            const operatorPublicKey = `0x${ operatorPrivateKeyObj.publicKey.toStringRaw() }`;
-            let accountId;
-            let accountBalance;
-            let accountEvmAddress;
-            const accountFetchApiUrl =
-                `https://testnet.mirrornode.hedera.com/api/v1/accounts?account.publickey=${operatorPublicKey}&balance=true&limit=1&order=desc`;
             try {
-                const accountFetch = await fetch(accountFetchApiUrl);
-                const accountObj = await accountFetch.json();
-                const account = accountObj?.accounts[0];
-                accountId = account?.account;
-                accountBalance = account?.balance?.balance;
-                accountEvmAddress = account?.evm_address;
+                operatorAccount = await getUsableAccount(operatorKey);
             } catch (ex) {
-                // do nothing
-            }
-            if (accountId !== operatorId || !accountBalance) {
                 // Fail fast here, as we know this account is non-functional in its present state
-                console.error('Must specify an operator account which exists, private key matches account, and is funded');
+                console.error(ex.message);
                 restart = true;
                 continue;
             }
-
-            operatorAccount = {
-                privateKey: operatorKey,
-                evmAddress: accountEvmAddress || '',
-                id: operatorId,
-            };
         }
 
         // prompt for BIP-39 seed phrase
@@ -195,6 +252,7 @@ async function promptInputs() {
             // generate new seed phrase
             mnemonic = await Mnemonic.generate12();
             seedPhrase = mnemonic.toString();
+            console.log('Randomly-generated seed phrase: ', seedPhrase);
         } else {
             // validate specified seed phrase
             let isValidatedSeedPhrase = true;
@@ -252,7 +310,24 @@ async function promptInputs() {
             };
         }
         if (use1stAccountAsOperator) {
-            operatorAccount = accounts[0];
+            // first, give user the opportunity to fund this account
+            console.log(`Please ensure that you have funded ${accounts[0].evmAddress}`);
+            console.log('If this account has not yet been created or funded, you may do so via https://faucet.hedera.com');
+            console.log('(Simply enter a blank value to when this account is ready)');
+            const inputOperatorId = await rlPrompt.question('> ');
+            operatorId = inputOperatorId;
+
+            // validate operator account details
+            try {
+                operatorAccount = await getUsableAccount(accounts[0].privateKey, accounts[0].evmAddress);
+            } catch (ex) {
+                // Fail fast here, as we know this account is non-functional in its present state
+                console.error(ex.message);
+                restart = true;
+                continue;
+            }
+
+            accounts[0].id = operatorAccount.id;
         }
 
         // prompt for RPC URL
