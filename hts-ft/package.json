@@ -1,0 +1,11 @@
+{
+    "type": "module",
+    "private": true,
+    "dependencies": {
+        "@hashgraph/sdk": "2.48.1",
+        "dotenv": "16.4.5"
+    },
+    "scripts": {
+        "test": "echo 'no tests yet'"
+    }
+}
