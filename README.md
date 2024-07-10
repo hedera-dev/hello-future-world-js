@@ -69,8 +69,8 @@ Steps:
 
 1. `TopicCreateTransaction`
 1. `TopicMessageSubmitTransaction`
-1. Mirror Node API for programmatic verification
 1. Hashscan for manual verification
+1. Mirror Node API for programmatic verification
 
 ### Smart Contract using HSCS
 
