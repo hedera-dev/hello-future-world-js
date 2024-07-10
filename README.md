@@ -2,6 +2,10 @@
 
 Intended to be used as a common starting point for demo repos for tutorials.
 
+<a href="https://gitpod.io/?autostart=true#https://github.com/hedera-dev/hedera-tutorial-demo-base-template" target="_blank" rel="noreferrer">
+  <img src="./img/gitpod-open-button.svg" />
+</a>
+
 ## Features
 
 - Installation of bare minimum dependencies
@@ -72,10 +76,11 @@ Developer friction points anticipated include:
 
 As a tutorial reader:
 
-1. In a new browser tab or window copy paste: `https://gitpod.io/?autostart=false#` into the address bar - do not hit "Enter" or otherwise navigate yet!
-1. Copy the URL of the tutorial repo, and paste it in the address bar as well - now hit "Enter" to navigate to it
-   - e.g. if the tutorial repo is `https://github.com/my-username/my-new-tutorial`,
-     the URL to navigate to would be `https://gitpod.io/?autostart=false#https://github.com/my-username/my-new-tutorial`
+1. Open the tutorial repo in Gitpod
+   - Option A: Click the large **Open in Gitpod** button at the top of the README of the tutorial repo
+   - Option B: Enter `https://gitpod.io/?autostart=false#` followed by the Github URL of the tutorial
+     - e.g. if the tutorial repo is `https://github.com/my-username/my-new-tutorial`,
+       the URL to navigate to would be `https://gitpod.io/?autostart=false#https://github.com/my-username/my-new-tutorial`
 1. Wait for the Gitpod spinner
 1. In the VS code terminal, you should see 3 terminals, `rpcrelay_pull`, `rpcrelay_run`, and `main`
 1. You do not need to use the `rpcrelay_pull` and `rpcrelay_run` terminals, let them run in the background
@@ -96,8 +101,10 @@ As a tutorial author:
 1. Add new files necessary for your tutorial
 1. Add instructions specific to how to answer the `main` script prompts to
    the `README.md` or wherever the tutorial text is published
-   - State how to answer based on the portal flow vs the faucet flow, at minimum
+   - State how to answer based on the **portal flow** vs the **faucet flow**, at minimum
    - Additionally, state any specific instructions pertaining to the tutorial
+1. Update the URL in `href` for the `<a />` tag surrounding the **Open in Gitpod**
+   SVG button at the top of `README.md`
 1. `git commit` and `git push` to your new git remote (your new repo)
 1. Follow the steps in "as a tutorial reader" above, and verify that the tutorial is functional in Gitpod.
 
