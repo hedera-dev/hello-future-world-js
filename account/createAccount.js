@@ -66,8 +66,8 @@ async function createAccount() {
     const accountBalance = new AccountBalanceQuery()
         .setAccountId(account1Id)
         .execute(client);
-
-    console.log("The new account balance is: " + (await accountBalance).hbars);
+    const hbarBalance = (await accountBalance).hbars;
+    console.log("The new account balance is: " + hbarBalance);
     console.log(" ");
 
     console.log("\x1b[34m%s\x1b[0m","🔵 Get account data from the Hedera Mirror Node...");
@@ -115,7 +115,7 @@ async function createAccount() {
     //View your account on HashScan
     console.log("\x1b[34m%s\x1b[0m", "🔵 View the account on HashScan...");
     const accountVerifyHashscanUrl = `https://hashscan.io/testnet/account/${account1Id.toString()}`;
-    console.log("URL to your account on HashScan:", accountVerifyHashscanUrl);
+    console.log("Paste URL in browser:", accountVerifyHashscanUrl);
     console.log(" ");
 
     //View the account create transaction on HashScan
@@ -125,7 +125,7 @@ async function createAccount() {
     );
     const accountCreateTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${accountCreateTransactionId}`;
     console.log(
-        "URL to the account create transaction on HashScan:",
+        "Paste URL in browser:",
         accountCreateTxVerifyHashscanUrl
     );
     console.log(" ");
@@ -156,6 +156,21 @@ async function createAccount() {
 
     //Submit the transaction to the Hedera Testnet
     const transferTxSubmitted = await transferTxSigned.execute(client);
+
+    //Get the transfer transaction receipt
+    const transferTxReceipt = await transferTxSubmitted.getReceipt(client);
+    const transactionStatus = transferTxReceipt.status;
+    console.log(
+        "The transfer transaction status is: " + transactionStatus.toString()
+    );
+
+    //Get the new account balance from a consensus node
+    const newAccountBalance = new AccountBalanceQuery()
+        .setAccountId(account1Id)
+        .execute(client);
+    const newHbarBalance = (await newAccountBalance).hbars;
+    console.log("The new account balance after the transfer; " + newHbarBalance);
+    console.log(" ");
 
     console.log(
     "\x1b[34m%s\x1b[0m",
