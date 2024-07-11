@@ -43,7 +43,7 @@ async function createAccount() {
         accountMemo: `Hello Future World from ${YOUR_NAME}'s first account!`,
     }).freezeWith(client); //Freeze the transaction to prepare for signing
 
-    //Get the transaction ID of the transaction
+    //Get the transaction ID of the transaction. The SDK automatically generates and assigns a transaction ID when the transaction is created
     const accountCreateTransactionId = accountCreateTx.transactionId;
     console.log(
         "The account create transaction ID: " + accountCreateTransactionId
