@@ -87,6 +87,30 @@ async function createAccount() {
     console.log("The account memo: ", accountCreateJsonAccountMemo);
     console.log(" ");
 
+    //Hedera mirror node account create transaction request
+    let [accountCreateTxIdA, accountCreatetransferTxIdB] =
+    accountCreateTransactionId.toString().split("@");
+    accountCreatetransferTxIdB = accountCreatetransferTxIdB.replace(".", "-");
+    const accountCreateTxIdMirrorNodeFormat = `${accountCreateTxIdA}-${accountCreatetransferTxIdB}`;
+    const accountCreateTxVerifyMirrorNodeApiUrl = `https://testnet.mirrornode.hedera.com/api/v1/transactions/${accountCreateTxIdMirrorNodeFormat}?nonce=0`;
+    console.log(
+        "The account create transaction Hedera Mirror Node API request: \n",
+        accountCreateTxVerifyMirrorNodeApiUrl
+      );
+    console.log(" ");
+    
+    //View the account create transaction on HashScan
+    console.log(
+        "\x1b[34m%s\x1b[0m",
+        "🔵 View the account create transaction on HashScan..."
+      );
+    const accountCreateTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${accountCreateTransactionId}`;
+    console.log(
+        "URL to the account create transaction on HashScan:",
+        accountCreateTxVerifyHashscanUrl
+      );
+    console.log(" ");
+
     //View your account on HashScan
     console.log("\x1b[34m%s\x1b[0m", "🔵 View the account on HashScan...");
     const accountVerifyHashscanUrl = `https://hashscan.io/testnet/account/${account1Id.toString()}`;
