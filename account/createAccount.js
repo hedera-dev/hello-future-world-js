@@ -11,7 +11,7 @@ import {
 } from '@hashgraph/sdk';
 import dotenv from 'dotenv';
 
-async function scriptAccount() {
+async function createAccount() {
     // Read in environment variables from `.env` file in parent directory
     dotenv.config({ path: '../.env' });
 
@@ -179,4 +179,4 @@ async function scriptAccount() {
     client.close();
     }
 
-scriptAccount();
+createAccount();
