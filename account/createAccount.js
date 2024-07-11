@@ -88,6 +88,7 @@ async function createAccount() {
     console.log(" ");
 
     //Hedera mirror node account create transaction request
+    //The transaction ID has to be converted to the correct format to pass in the mirror node query (0.0.x@x.x to 0.0.x-x-x)
     let [accountCreateTxIdA, accountCreatetransferTxIdB] =
     accountCreateTransactionId.toString().split("@");
     accountCreatetransferTxIdB = accountCreatetransferTxIdB.replace(".", "-");
@@ -165,7 +166,7 @@ async function createAccount() {
     await new Promise((resolve) => setTimeout(resolve, 6_000));
 
     //The transfer transaction mirror node API resquest
-
+    //The transaction ID has to be converted to the correct format to pass in the mirror node query (0.0.x@x.x to 0.0.x-x-x)
     let [transferTxIdA, transferTxIdB] = transferTxId.toString().split("@");
     transferTxIdB = transferTxIdB.replace(".", "-");
     const transferTxIdMirrorNodeFormat = `${transferTxIdA}-${transferTxIdB}`;
