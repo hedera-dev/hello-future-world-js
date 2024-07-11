@@ -200,7 +200,7 @@ async function createAccount() {
         ?.slice(-3)
         ?.map((obj) => obj.amount / 100000000);
     console.log(
-        "The transfer transaction transfer amounts in hbar \n",
+        "The transaction fee , debit and credit amounts of the transfer transaction \n",
         transferJsonAccountTransfersFinal3Amounts
       );
     console.log(" ");
