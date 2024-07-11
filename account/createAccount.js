@@ -107,7 +107,7 @@ async function createAccount() {
       );
     const accountCreateTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${accountCreateTransactionId}`;
     console.log(
-        "URL to the account create transaction on HashScan:",
+        "Copy and paste this URL in your browser: ",
         accountCreateTxVerifyHashscanUrl
       );
     console.log(" ");
@@ -125,7 +125,7 @@ async function createAccount() {
     );
     const accountCreateTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${accountCreateTransactionId}`;
     console.log(
-        "Paste URL in browser:",
+        "Copy and paste this URL in your browser: ",
         accountCreateTxVerifyHashscanUrl
     );
     console.log(" ");
@@ -212,7 +212,7 @@ async function createAccount() {
     );
     const transferTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${transferTxId}`;
     console.log(
-        "URL to the transfer transaction on HashScan:",
+        "Copy and paste this URL in your browser: ",
         transferTxVerifyHashscanUrl
     );
     console.log(" ");
