@@ -161,7 +161,7 @@ async function createAccount() {
     "🔵 Get transfer transaction data from the Hedera Mirror Node..."
       );
 
-    // Wait for 10s for record files (blocks) to propagate to mirror nodes
+    // Wait for 6s for record files (blocks) to propagate to mirror nodes
     await new Promise((resolve) => setTimeout(resolve, 6_000));
 
     //The transfer transaction mirror node API resquest
