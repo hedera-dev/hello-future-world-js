@@ -147,7 +147,7 @@ async function createAccount() {
 
     //Get the transaction ID for the transfer transaction
     const transferTxId = transferTx.transactionId;
-    console.log("transferTxId:", transferTxId.toString());
+    console.log("The transfer transaction ID:", transferTxId.toString());
     console.log(" ");
 
     //Sign the transaction with the account that is being debited (operator account) and the transaction fee payer account (operator account)
