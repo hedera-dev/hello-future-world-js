@@ -4,10 +4,19 @@ import {
     Client,
     PrivateKey,
     AccountId,
+    TokenCreateTransaction,
+    TokenType,
 } from '@hashgraph/sdk';
 import dotenv from 'dotenv';
 
-async function script_TODO_NAME() {
+const ANSI_ESCAPE_CODE_BLUE = '\x1b[34m%s\x1b[0m';
+const HELLIP_CHAR = '…';
+
+function blueLog(str) {
+    console.log(ANSI_ESCAPE_CODE_BLUE, '🔵', str);
+}
+
+async function scriptHtsFungibleToken() {
     // Read in environment variables from `.env` file in parent directory
     dotenv.config({ path: '../.env' });
 
@@ -21,31 +30,77 @@ async function script_TODO_NAME() {
     const operatorKey = PrivateKey.fromStringECDSA(operatorKeyStr);
     const client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
-    // TODO main steps go here
+    // NOTE: Create a HTS token
+    // Step (1) in the accompanying tutorial
+    blueLog('Creating new HTS token' + HELLIP_CHAR);
+    const YOUR_NAME = '<enterYourName>';
+    const tokenCreateTx = await new TokenCreateTransaction()
+        // HTS `TokenType.FungibleCommon` behaves similarly to ERC20
+        .setTokenType(TokenType.FungibleCommon)
+        // Configure token options: name, symbol, decimals, initial supply
+        .setTokenName(`${YOUR_NAME} coin`)
+        .setTokenSymbol('HFW-HTS')
+        .setDecimals(2)
+        .setInitialSupply(1_000_000)
+        // Configure token access permissions: treasury account, admin, freezing
+        .setTreasuryAccountId(operatorId)
+        .setAdminKey(operatorKey)
+        .setFreezeDefault(false)
+        // Freeze the transaction to prepare for signing
+        .freezeWith(client);
+
+    // Get the transaction ID of the transaction. The SDK automatically generates and assigns a transaction ID when the transaction is created
+    const tokenCreateTxId = tokenCreateTx.transactionId;
+    console.log('The token create transaction ID: ',
+        tokenCreateTxId.toString());
+
+    // Sign the transaction with the account key that will be paying for this transaction
+    const tokenCreateTxSigned = await tokenCreateTx.sign(operatorKey);
+
+    // Submit the transaction to the Hedera Testnet
+    const tokenCreateTxSubmitted = await tokenCreateTxSigned.execute(client);
+
+    // Get the transaction receipt
+    const tokenCreateTxReceipt = await tokenCreateTxSubmitted.getReceipt(client);
+
+    // Get the token ID
+    const tokenId = tokenCreateTxReceipt.tokenId;
+    console.log('tokenId:', tokenId.toString());
+    console.log('');
 
     client.close();
 
     // NOTE: Verify transactions using Hashscan
-    // Step (3) in the accompanying tutorial
+    // Step (2) in the accompanying tutorial
     // This is a manual step, the code below only outputs the URL to visit
-    // TODO
-    const TODO_NAME_VerifyHashscanUrl =
-        `TODO_URL_WITH_SUBSTITUTION`;
-    console.log('TODO_NAME_VerifyHashscanUrl:', TODO_NAME_VerifyHashscanUrl);
 
-    // Wait for 5s for record files (blocks) to propagate to mirror nodes
-    await new Promise((resolve) => setTimeout(resolve, 5_000));
+    // View your token on HashScan
+    blueLog('View the token on HashScan' + HELLIP_CHAR);
+    const tokenVerifyHashscanUrl = `https://hashscan.io/testnet/token/${tokenId.toString()}`;
+    console.log('Paste URL in browser:', tokenVerifyHashscanUrl);
+    console.log('');
 
-    // NOTE: Verify transactions using Mirror Node API
-    // Step (4) in the accompanying tutorial
-    const TODO_NAME_VerifyMirrorNodeApiUrl =
-        `TODO_URL_WITH_SUBSTITUTION`;
-    console.log('TODO_NAME_VerifyMirrorNodeApiUrl:', TODO_NAME_VerifyMirrorNodeApiUrl);
-    const TODO_NAME_Fetch = await fetch(TODO_NAME_VerifyMirrorNodeApiUrl);
-    const TODO_NAME_Json = await TODO_NAME_Fetch.json();
-    const TODO_NAME_TODO_FIELD =
-        TODO_NAME_Json?.TODO_FIELD;
-    console.log('TODO_NAME_TODO_FIELD:', TODO_NAME_TODO_FIELD);
+    // Wait for 6s for record files (blocks) to propagate to mirror nodes
+    await new Promise((resolve) => setTimeout(resolve, 6_000));
+
+    // NOTE: Verify token using Mirror Node API
+    // Step (3) in the accompanying tutorial
+    blueLog('Get token data from the Hedera Mirror Node' + HELLIP_CHAR);
+    const tokenVerifyMirrorNodeApiUrl =
+        `https://testnet.mirrornode.hedera.com/api/v1/tokens/${tokenId.toString()}`;
+    console.log(
+        'The token Hedera Mirror Node API URL:\n',
+        tokenVerifyMirrorNodeApiUrl
+    );
+    const tokenVerifyFetch = await fetch(tokenVerifyMirrorNodeApiUrl);
+    const tokenVerifyJson = await tokenVerifyFetch.json();
+    const tokenVerifyName =
+        tokenVerifyJson?.name;
+    console.log('The name of this token:', tokenVerifyName);
+    const tokenVerifyTotalSupply =
+        tokenVerifyJson?.total_supply;
+    console.log('The total supply of this token:', tokenVerifyTotalSupply);
+    console.log('');
 }
 
-script_TODO_NAME();
+scriptHtsFungibleToken();
