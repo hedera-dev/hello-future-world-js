@@ -11,8 +11,11 @@ import {
     AccountBalanceQuery,
 } from '@hashgraph/sdk';
 import dotenv from 'dotenv';
-
-const ANSI_ESCAPE_CODE_BLUE = '\x1b[34m%s\x1b[0m';
+import {
+    HELLIP_CHAR,
+    blueLog,
+    convertTransactionIdForMirrorNodeApi,
+} from '../util/util.js';
 
 async function scriptAccount() {
     // Read in environment variables from `.env` file in parent directory
@@ -39,8 +42,7 @@ async function scriptAccount() {
     // Step (1) in the accompanying tutorial
     const YOUR_NAME = '<enterYourName>';
 
-    console.log(ANSI_ESCAPE_CODE_BLUE,
-        '🔵 Creating, signing and submitting the account create transaction...');
+    blueLog('Creating, signing and submitting the account create transaction' + HELLIP_CHAR);
     const accountCreateTx = await new AccountCreateTransaction({
         initialBalance: new Hbar(5),
         key: account1PrivateKey,
@@ -75,8 +77,7 @@ async function scriptAccount() {
     console.log('The new account balance is: ', hbarBalance.toString());
     console.log('');
 
-    console.log(ANSI_ESCAPE_CODE_BLUE,
-        '🔵 Get account data from the Hedera Mirror Node...');
+    blueLog('Get account data from the Hedera Mirror Node' + HELLIP_CHAR);
 
     // Wait for 6s for record files (blocks) to propagate to mirror nodes
     await new Promise((resolve) => setTimeout(resolve, 6_000));
@@ -109,8 +110,7 @@ async function scriptAccount() {
     // console.log('');
 
     // View your account on HashScan
-    console.log(ANSI_ESCAPE_CODE_BLUE,
-        '🔵 View the account on HashScan...');
+    blueLog('View the account on HashScan' + HELLIP_CHAR);
     const accountVerifyHashscanUrl = `https://hashscan.io/testnet/account/${account1Id.toString()}`;
     console.log('Paste URL in browser:', accountVerifyHashscanUrl);
     console.log('');
@@ -118,8 +118,7 @@ async function scriptAccount() {
     // TODO revisit this, determine whether necessary after writing accompanying tutorial
     // and measuring time taken to complete, etc.
     // //View the account create transaction on HashScan
-    // console.log(ANSI_ESCAPE_CODE_BLUE,
-    //     '🔵 View the account create transaction on HashScan...');
+    // blueLog('View the account create transaction on HashScan' + HELLIP_CHAR);
     // const accountCreateTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${accountCreateTransactionId}`;
     // console.log(
     //     'Copy and paste this URL in your browser: ',
@@ -132,8 +131,7 @@ async function scriptAccount() {
 
     // NOTE: Transfer HBAR using TransferTransaction
     // Step (2) in the accompanying tutorial
-    console.log(ANSI_ESCAPE_CODE_BLUE,
-        '🔵 Creating, signing, and submitting the transfer transaction...');
+    blueLog('Creating, signing, and submitting the transfer transaction' + HELLIP_CHAR);
 
     // TODO Revisit to consider whether to use 1 debit + multiple credits
     const transferTx = await new TransferTransaction()
@@ -147,7 +145,6 @@ async function scriptAccount() {
     // Get the transaction ID for the transfer transaction
     const transferTxId = transferTx.transactionId;
     console.log('The transfer transaction ID:', transferTxId.toString());
-    console.log('');
 
     // Sign the transaction with the account that is being debited (operator account) and the transaction fee payer account (operator account)
     // Since the account that is being debited and the account that is paying for the transaction are the same only one accoun'ts signature is required
@@ -173,23 +170,18 @@ async function scriptAccount() {
 
     client.close();
 
-    console.log(ANSI_ESCAPE_CODE_BLUE,
-        '🔵 Get transfer transaction data from the Hedera Mirror Node...');
+    blueLog('Get transfer transaction data from the Hedera Mirror Node' + HELLIP_CHAR);
 
     // Wait for 6s for record files (blocks) to propagate to mirror nodes
     await new Promise((resolve) => setTimeout(resolve, 6_000));
 
-    // The transfer transaction mirror node API resquest
-    // The transaction ID has to be converted to the correct format to pass in the mirror node query (0.0.x@x.x to 0.0.x-x-x)
-    let [transferTxIdA, transferTxIdB] = transferTxId.toString().split('@');
-    transferTxIdB = transferTxIdB.replace('.', '-');
-    const transferTxIdMirrorNodeFormat = `${transferTxIdA}-${transferTxIdB}`;
+    // The transfer transaction mirror node API request
+    const transferTxIdMirrorNodeFormat = convertTransactionIdForMirrorNodeApi(transferTxId);
     const transferTxVerifyMirrorNodeApiUrl = `https://testnet.mirrornode.hedera.com/api/v1/transactions/${transferTxIdMirrorNodeFormat}?nonce=0`;
     console.log(
         'The transfer transaction Hedera Mirror Node API URL:\n',
         transferTxVerifyMirrorNodeApiUrl
     );
-    console.log('');
 
     // The transfer transaction assessed transaction fee, debits, and credits in HBAR
     const transferFetch = await fetch(transferTxVerifyMirrorNodeApiUrl);
@@ -205,8 +197,7 @@ async function scriptAccount() {
     console.log('');
 
     // View the transaction in HashScan
-    console.log(ANSI_ESCAPE_CODE_BLUE,
-        '🔵 View the transfer transaction transaction in HashScan...');
+    blueLog('View the transfer transaction transaction in HashScan' + HELLIP_CHAR);
     const transferTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${transferTxId}`;
     console.log(
         'Copy and paste this URL in your browser:',

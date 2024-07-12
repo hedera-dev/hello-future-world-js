@@ -8,13 +8,10 @@ import {
     TopicMessageSubmitTransaction,
 } from '@hashgraph/sdk';
 import dotenv from 'dotenv';
-
-const ANSI_ESCAPE_CODE_BLUE = '\x1b[34m%s\x1b[0m';
-const HELLIP_CHAR = '…';
-
-function blueLog(str) {
-    console.log(ANSI_ESCAPE_CODE_BLUE, '🔵', str);
-}
+import {
+    HELLIP_CHAR,
+    blueLog,
+} from '../util/util.js';
 
 async function scriptHcsTopic() {
     // Read in environment variables from `.env` file in parent directory
@@ -57,7 +54,6 @@ async function scriptHcsTopic() {
     // Get the topic ID
     const topicId = topicCreateTxReceipt.topicId;
     console.log('topicId:', topicId.toString());
-    console.log('');
 
     // NOTE: Publish a message to the HCS topic
     // Step (2) in the accompanying tutorial
