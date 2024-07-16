@@ -3,6 +3,9 @@
 const fs = require('fs/promises');
 const path = require('path');
 const dotenv = require('dotenv');
+const {
+    PrivateKey,
+} = require('@hashgraph/sdk');
 
 const DEFAULT_VALUES = {
     dotEnvFilePath: path.resolve(__dirname, '../.rpcrelay.env'),
@@ -17,13 +20,16 @@ async function initDotEnvForRpcRelay() {
         OPERATOR_ACCOUNT_ID,
     } = process.env;
 
-    let operatorId = OPERATOR_ACCOUNT_ID;
+    const operatorId = OPERATOR_ACCOUNT_ID;
     let operatorKey = OPERATOR_ACCOUNT_PRIVATE_KEY;
 
     if (!operatorId) {
         console.error('Must define operator ID');
         return;
     }
+
+    // convert operatorKey from Hex encoded format to DER encoded format
+    operatorKey = PrivateKey.fromStringECDSA(operatorKey).toStringDer();
 
 const dotEnvText =
 `HEDERA_NETWORK=testnet
