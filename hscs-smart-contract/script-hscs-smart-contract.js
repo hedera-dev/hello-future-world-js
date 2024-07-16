@@ -1,51 +1,80 @@
 #!/usr/bin/env node
 
-import {
-    Client,
-    PrivateKey,
-    AccountId,
-} from '@hashgraph/sdk';
+import fs from 'node:fs/promises';
+import { JsonRpcProvider } from '@ethersproject/providers';
+import { Wallet } from '@ethersproject/wallet';
+import { ContractFactory } from '@ethersproject/contracts';
 import dotenv from 'dotenv';
+import {
+    HELLIP_CHAR,
+    blueLog,
+} from '../util/util.js';
 
-async function script_TODO_NAME() {
+const solidityFileName = 'my_contract_sol_MyContract';
+
+async function scriptHscsSmartContract() {
     // Read in environment variables from `.env` file in parent directory
     dotenv.config({ path: '../.env' });
 
     // Initialise the operator account
     const operatorIdStr = process.env.OPERATOR_ACCOUNT_ID;
     const operatorKeyStr = process.env.OPERATOR_ACCOUNT_PRIVATE_KEY;
-    if (!operatorIdStr || !operatorKeyStr) {
-        throw new Error('Must set OPERATOR_ACCOUNT_ID and OPERATOR_ACCOUNT_PRIVATE_KEY environment variables');
+    const rpcUrl = process.env.RPC_URL;
+    if (!operatorIdStr || !operatorKeyStr || !rpcUrl) {
+        throw new Error('Must set OPERATOR_ACCOUNT_ID, OPERATOR_ACCOUNT_PRIVATE_KEY, and RPC_URL environment variables');
     }
-    const operatorId = AccountId.fromString(operatorIdStr);
-    const operatorKey = PrivateKey.fromStringECDSA(operatorKeyStr);
-    const client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
-    // TODO main steps go here
+    // initialise operator account
+    blueLog('Initialising operator account' + HELLIP_CHAR);
+    const rpcProvider = new JsonRpcProvider(rpcUrl);
+    const operatorWallet = new Wallet(operatorKeyStr, rpcProvider);
+    const operatorAddress = operatorWallet.address;
+    const operatorAccountHashscanUrl = `https://hashscan.io/testnet/account/${operatorAddress}`;
+    console.log('Operator account Hashscan URL', operatorAccountHashscanUrl);
+    console.log('');
 
-    client.close();
+    const YOUR_NAME = '<enterYourName>';
 
-    // NOTE: Verify transactions using Hashscan
+    // Compile smart contract
+    blueLog('Reading compiled smart contract artefacts' + HELLIP_CHAR);
+    const abi = await fs.readFile(`${solidityFileName}.abi`, { encoding: 'utf8' });
+    const evmBytecode = await fs.readFile(`${solidityFileName}.bin`, { encoding: 'utf8' });
+    console.log('Compiled smart contract ABI:', abi.substring(0, 32), HELLIP_CHAR);
+    console.log('Compiled smart contract EVM bytecode:', evmBytecode.substring(0, 32), HELLIP_CHAR);
+    console.log('');
+
+    // Deploy smart contract
+    // NOTE: Prepare smart contract for deployment
+    // Step (2) in the accompanying tutorial
+    blueLog('Deploying smart contract' + HELLIP_CHAR);
+    const myContractFactory = new ContractFactory(abi, evmBytecode, operatorWallet);
+    const myContract = await myContractFactory.deploy();
+    await myContract.deployTransaction.wait();
+    const myContractAddress = myContract.address;
+    const myContractHashscanUrl = `https://hashscan.io/testnet/contract/${myContractAddress}`;
+    console.log('Deployed smart contract address:', myContractAddress);
+    console.log('Deployed smart contract Hashscan URL:', myContractHashscanUrl);
+    console.log('');
+
+    // Write data to smart contract
+    // NOTE: Invoke a smart contract transaction
     // Step (3) in the accompanying tutorial
-    // This is a manual step, the code below only outputs the URL to visit
-    // TODO
-    const TODO_NAME_VerifyHashscanUrl =
-        `TODO_URL_WITH_SUBSTITUTION`;
-    console.log('TODO_NAME_VerifyHashscanUrl:', TODO_NAME_VerifyHashscanUrl);
+    blueLog('Write data to smart contract' + HELLIP_CHAR);
+    const scWriteTxRequest = await myContract.functions.introduce(YOUR_NAME);
+    const scWriteTxReceipt = await scWriteTxRequest.wait();
+    const scWriteTxHash = scWriteTxReceipt.transactionHash;
+    const scWriteTxHashscanUrl = `https://hashscan.io/testnet/transaction/${scWriteTxHash}`;
+    console.log('Smart contract write transaction hash', scWriteTxHash);
+    console.log('Smart contract write transaction Hashscan URL', scWriteTxHashscanUrl);
+    console.log('');
 
-    // Wait for 5s for record files (blocks) to propagate to mirror nodes
-    await new Promise((resolve) => setTimeout(resolve, 5_000));
-
-    // NOTE: Verify transactions using Mirror Node API
+    // Read data from smart contract
+    // NOTE: Invoke a smart contract query
     // Step (4) in the accompanying tutorial
-    const TODO_NAME_VerifyMirrorNodeApiUrl =
-        `TODO_URL_WITH_SUBSTITUTION`;
-    console.log('TODO_NAME_VerifyMirrorNodeApiUrl:', TODO_NAME_VerifyMirrorNodeApiUrl);
-    const TODO_NAME_Fetch = await fetch(TODO_NAME_VerifyMirrorNodeApiUrl);
-    const TODO_NAME_Json = await TODO_NAME_Fetch.json();
-    const TODO_NAME_TODO_FIELD =
-        TODO_NAME_Json?.TODO_FIELD;
-    console.log('TODO_NAME_TODO_FIELD:', TODO_NAME_TODO_FIELD);
+    blueLog('Read data from smart contract' + HELLIP_CHAR);
+    const [scReadQueryResult] = await myContract.functions.greet();
+    console.log('Smart contract read query result', scReadQueryResult);
+    console.log('');
 }
 
-script_TODO_NAME();
+scriptHscsSmartContract();

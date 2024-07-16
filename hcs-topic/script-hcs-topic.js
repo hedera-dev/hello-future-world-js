@@ -32,7 +32,7 @@ async function scriptHcsTopic() {
     blueLog('Creating new HCS topic' + HELLIP_CHAR);
     const YOUR_NAME = '<enterYourName>';
     const topicCreateTx = await new TopicCreateTransaction()
-        .setTopicMemo(`HFW-HTS topic by ${YOUR_NAME}`)
+        .setTopicMemo(`HFW-HCS topic by ${YOUR_NAME}`)
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
 
