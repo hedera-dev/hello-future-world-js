@@ -35,6 +35,7 @@ async function initDotEnvForApp() {
 }
 
 function constructDotEnvFile({
+    yourName,
     operatorAccount,
     accounts,
     seedPhrase,
@@ -51,7 +52,15 @@ ACCOUNT_${accountIndex}_ID=${account.id}
         return text;
     }).join('\n\n');
     const output =
-`# Operator account
+`# This .env file stores credentials for Hedera Testnet only.
+# Do **not** reuse or share any credentials from Hedera Mainnet,
+# as this file is stored as plain text on disk,
+# and is therefore not secure enough.
+
+# Name
+YOUR_NAME="${yourName}"
+
+# Operator account
 OPERATOR_ACCOUNT_PRIVATE_KEY=${operatorAccount.privateKey}
 OPERATOR_ACCOUNT_EVM_ADDRESS=${operatorAccount.evmAddress}
 OPERATOR_ACCOUNT_ID=${operatorAccount.id}
@@ -148,6 +157,7 @@ async function promptInputs() {
     // read in initial values for env variables that have been set
     dotenv.config({ path: DEFAULT_VALUES.dotEnvFilePath });
     const {
+        YOUR_NAME,
         OPERATOR_ACCOUNT_PRIVATE_KEY,
         SEED_PHRASE,
         NUM_ACCOUNTS,
@@ -155,6 +165,7 @@ async function promptInputs() {
     } = process.env;
 
     let operatorAccount;
+    let yourName = YOUR_NAME;
     let operatorKey = OPERATOR_ACCOUNT_PRIVATE_KEY;
     let seedPhrase = SEED_PHRASE;
     let numAccounts = NUM_ACCOUNTS;
@@ -175,6 +186,22 @@ async function promptInputs() {
     do {
         restart = false;
         let use1stAccountAsOperator = false;
+
+        // prompt user for their preferred moniker
+        console.log('Enter your name or nickname');
+        if (yourName) {
+            console.log(`Current: "${yourName}"`);
+            console.log('(enter blank to re-use the above value)');
+        } else {
+            console.log('e.g. "bguiz"');
+        }
+        const inputYourName = await rlPrompt.question('> ');
+        yourName = inputYourName || yourName;
+        if (!yourName) {
+            console.error('Specified name is empty');
+            restart = true;
+            continue;
+        }
 
         // prompt for operator account private key
         // - user may opt for "none" in which case the 1st account
@@ -333,6 +360,7 @@ async function promptInputs() {
         // - if restart is selected, this loop with prompts is repeated,
         //   allowing user to update input values
         dotEnvText = constructDotEnvFile({
+            yourName,
             operatorAccount,
             accounts,
             seedPhrase,
@@ -353,6 +381,7 @@ async function promptInputs() {
     rlPrompt.close();
 
     return {
+        yourName,
         operatorAccount,
         seedPhrase,
         numAccounts,
