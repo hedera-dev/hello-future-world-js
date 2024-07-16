@@ -17,11 +17,12 @@ async function scriptHscsSmartContract() {
     dotenv.config({ path: '../.env' });
 
     // Initialise the operator account
+    const yourName = process.env.YOUR_NAME;
     const operatorIdStr = process.env.OPERATOR_ACCOUNT_ID;
     const operatorKeyStr = process.env.OPERATOR_ACCOUNT_PRIVATE_KEY;
     const rpcUrl = process.env.RPC_URL;
-    if (!operatorIdStr || !operatorKeyStr || !rpcUrl) {
-        throw new Error('Must set OPERATOR_ACCOUNT_ID, OPERATOR_ACCOUNT_PRIVATE_KEY, and RPC_URL environment variables');
+    if (!yourName || !operatorIdStr || !operatorKeyStr || !rpcUrl) {
+        throw new Error('Must set YOUR_NAME, OPERATOR_ACCOUNT_ID, OPERATOR_ACCOUNT_PRIVATE_KEY, and RPC_URL environment variables');
     }
 
     // initialise operator account
@@ -32,8 +33,6 @@ async function scriptHscsSmartContract() {
     const operatorAccountHashscanUrl = `https://hashscan.io/testnet/account/${operatorAddress}`;
     console.log('Operator account Hashscan URL', operatorAccountHashscanUrl);
     console.log('');
-
-    const YOUR_NAME = '<enterYourName>';
 
     // Compile smart contract
     blueLog('Reading compiled smart contract artefacts' + HELLIP_CHAR);
@@ -60,7 +59,7 @@ async function scriptHscsSmartContract() {
     // NOTE: Invoke a smart contract transaction
     // Step (3) in the accompanying tutorial
     blueLog('Write data to smart contract' + HELLIP_CHAR);
-    const scWriteTxRequest = await myContract.functions.introduce(YOUR_NAME);
+    const scWriteTxRequest = await myContract.functions.introduce(yourName);
     const scWriteTxReceipt = await scWriteTxRequest.wait();
     const scWriteTxHash = scWriteTxReceipt.transactionHash;
     const scWriteTxHashscanUrl = `https://hashscan.io/testnet/transaction/${scWriteTxHash}`;

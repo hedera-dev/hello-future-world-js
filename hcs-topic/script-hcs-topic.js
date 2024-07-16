@@ -18,10 +18,11 @@ async function scriptHcsTopic() {
     dotenv.config({ path: '../.env' });
 
     // Initialise the operator account
+    const yourName = process.env.YOUR_NAME;
     const operatorIdStr = process.env.OPERATOR_ACCOUNT_ID;
     const operatorKeyStr = process.env.OPERATOR_ACCOUNT_PRIVATE_KEY;
-    if (!operatorIdStr || !operatorKeyStr) {
-        throw new Error('Must set OPERATOR_ACCOUNT_ID and OPERATOR_ACCOUNT_PRIVATE_KEY environment variables');
+    if (!yourName || !operatorIdStr || !operatorKeyStr) {
+        throw new Error('Must set YOUR_NAME, OPERATOR_ACCOUNT_ID and OPERATOR_ACCOUNT_PRIVATE_KEY environment variables');
     }
     const operatorId = AccountId.fromString(operatorIdStr);
     const operatorKey = PrivateKey.fromStringECDSA(operatorKeyStr);
@@ -30,9 +31,8 @@ async function scriptHcsTopic() {
     // NOTE: Create a HCS topic
     // Step (1) in the accompanying tutorial
     blueLog('Creating new HCS topic' + HELLIP_CHAR);
-    const YOUR_NAME = '<enterYourName>';
     const topicCreateTx = await new TopicCreateTransaction()
-        .setTopicMemo(`HFW-HCS topic by ${YOUR_NAME}`)
+        .setTopicMemo(`HFW-HCS topic by ${yourName}`)
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
 
@@ -59,7 +59,7 @@ async function scriptHcsTopic() {
     // Step (2) in the accompanying tutorial
     const topicMsgSubmitTx = await new TopicMessageSubmitTransaction()
         .setTopicId(topicId)
-        .setMessage(`Hello HCS! - ${YOUR_NAME}`)
+        .setMessage(`Hello HCS! - ${yourName}`)
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
 

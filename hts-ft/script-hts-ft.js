@@ -18,9 +18,10 @@ async function scriptHtsFungibleToken() {
     dotenv.config({ path: '../.env' });
 
     // Initialise the operator account
+    const yourName = process.env.YOUR_NAME;
     const operatorIdStr = process.env.OPERATOR_ACCOUNT_ID;
     const operatorKeyStr = process.env.OPERATOR_ACCOUNT_PRIVATE_KEY;
-    if (!operatorIdStr || !operatorKeyStr) {
+    if (!yourName || !operatorIdStr || !operatorKeyStr) {
         throw new Error('Must set OPERATOR_ACCOUNT_ID and OPERATOR_ACCOUNT_PRIVATE_KEY environment variables');
     }
     const operatorId = AccountId.fromString(operatorIdStr);
@@ -30,12 +31,11 @@ async function scriptHtsFungibleToken() {
     // NOTE: Create a HTS token
     // Step (1) in the accompanying tutorial
     blueLog('Creating new HTS token' + HELLIP_CHAR);
-    const YOUR_NAME = '<enterYourName>';
     const tokenCreateTx = await new TokenCreateTransaction()
         // HTS `TokenType.FungibleCommon` behaves similarly to ERC20
         .setTokenType(TokenType.FungibleCommon)
         // Configure token options: name, symbol, decimals, initial supply
-        .setTokenName(`${YOUR_NAME} coin`)
+        .setTokenName(`${yourName} coin`)
         .setTokenSymbol('HFW-HTS')
         .setDecimals(2)
         .setInitialSupply(1_000_000)

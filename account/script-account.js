@@ -22,11 +22,12 @@ async function scriptAccount() {
     dotenv.config({ path: '../.env' });
 
     // Initialise the operator account
+    const yourName = process.env.YOUR_NAME;
     const operatorIdStr = process.env.OPERATOR_ACCOUNT_ID;
     const operatorKeyStr = process.env.OPERATOR_ACCOUNT_PRIVATE_KEY;
 
-    if (!operatorIdStr || !operatorKeyStr) {
-        throw new Error('Must set OPERATOR_ACCOUNT_ID, OPERATOR_ACCOUNT_PRIVATE_KEY');
+    if (!yourName || !operatorIdStr || !operatorKeyStr) {
+        throw new Error('Must set YOUR_NAME, OPERATOR_ACCOUNT_ID, OPERATOR_ACCOUNT_PRIVATE_KEY');
     }
     const operatorId = AccountId.fromString(operatorIdStr);
     const operatorKey = PrivateKey.fromStringECDSA(operatorKeyStr);
@@ -40,13 +41,11 @@ async function scriptAccount() {
     // NOTE: Create new account using AccountCreateTransaction,
     // setting the initial hbar balance of 5 and an account key
     // Step (1) in the accompanying tutorial
-    const YOUR_NAME = '<enterYourName>';
-
     blueLog('Creating, signing and submitting the account create transaction' + HELLIP_CHAR);
     const accountCreateTx = await new AccountCreateTransaction({
         initialBalance: new Hbar(5),
         key: account1PrivateKey,
-        accountMemo: `Hello Future World from ${YOUR_NAME}'s first account!`,
+        accountMemo: `Hello Future World from ${yourName}'s first account!`,
     })
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
