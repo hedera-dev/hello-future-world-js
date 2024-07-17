@@ -2,6 +2,8 @@
 pragma solidity 0.8.17;
 
 contract MyContract {
+    string public constant hfwId = 'HFW-HSCS';
+
     mapping(address => string) public names;
 
     function introduce(string memory name) public {
@@ -12,6 +14,6 @@ contract MyContract {
         // NOTE: Store name in smart contract
         // Step (1) in the accompanying tutorial
         string memory name = names[msg.sender];
-        return string.concat("Hello future! - ", name, " HFW-HSCS");
+        return string.concat("Hello future! - ", name);
     }
 }

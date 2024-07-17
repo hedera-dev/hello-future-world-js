@@ -13,6 +13,8 @@ import {
     blueLog,
 } from '../util/util.js';
 
+const hfwId = 'HFW-HCS';
+
 async function scriptHcsTopic() {
     // Read in environment variables from `.env` file in parent directory
     dotenv.config({ path: '../.env' });
@@ -32,6 +34,7 @@ async function scriptHcsTopic() {
     // Step (1) in the accompanying tutorial
     blueLog('Creating new HCS topic' + HELLIP_CHAR);
     const topicCreateTx = await new TopicCreateTransaction()
+        .setTransactionMemo(hfwId)
         .setTopicMemo(`HFW-HCS topic by ${yourName}`)
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
@@ -58,6 +61,7 @@ async function scriptHcsTopic() {
     // NOTE: Publish a message to the HCS topic
     // Step (2) in the accompanying tutorial
     const topicMsgSubmitTx = await new TopicMessageSubmitTransaction()
+        .setTransactionMemo(hfwId)
         .setTopicId(topicId)
         .setMessage(`Hello HCS! - ${yourName}`)
         // Freeze the transaction to prepare for signing
@@ -65,7 +69,7 @@ async function scriptHcsTopic() {
 
     // Get the transaction ID of the transaction. The SDK automatically generates and assigns a transaction ID when the transaction is created
     const topicMsgSubmitTxId = topicMsgSubmitTx.transactionId;
-    console.log('The token create transaction ID: ',
+    console.log('The message submit create transaction ID: ',
         topicMsgSubmitTxId.toString());
 
     // Sign the transaction with the account key that will be paying for this transaction

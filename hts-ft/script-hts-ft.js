@@ -13,6 +13,8 @@ import {
     blueLog,
 } from '../util/util.js';
 
+const hfwId = 'HFW-HTS';
+
 async function scriptHtsFungibleToken() {
     // Read in environment variables from `.env` file in parent directory
     dotenv.config({ path: '../.env' });
@@ -32,11 +34,13 @@ async function scriptHtsFungibleToken() {
     // Step (1) in the accompanying tutorial
     blueLog('Creating new HTS token' + HELLIP_CHAR);
     const tokenCreateTx = await new TokenCreateTransaction()
+        .setTransactionMemo(hfwId)
+        .setTokenMemo(`${hfwId} topic by ${yourName}`)
         // HTS `TokenType.FungibleCommon` behaves similarly to ERC20
         .setTokenType(TokenType.FungibleCommon)
         // Configure token options: name, symbol, decimals, initial supply
         .setTokenName(`${yourName} coin`)
-        .setTokenSymbol('HFW-HTS')
+        .setTokenSymbol(hfwId)
         .setDecimals(2)
         .setInitialSupply(1_000_000)
         // Configure token access permissions: treasury account, admin, freezing

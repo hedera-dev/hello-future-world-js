@@ -10,6 +10,7 @@ import {
     blueLog,
 } from '../util/util.js';
 
+const hfwId = 'HFW-HSCS';
 const solidityFileName = 'my_contract_sol_MyContract';
 
 async function scriptHscsSmartContract() {
@@ -59,7 +60,7 @@ async function scriptHscsSmartContract() {
     // NOTE: Invoke a smart contract transaction
     // Step (3) in the accompanying tutorial
     blueLog('Write data to smart contract' + HELLIP_CHAR);
-    const scWriteTxRequest = await myContract.functions.introduce(yourName);
+    const scWriteTxRequest = await myContract.functions.introduce(`${yourName} - ${hfwId}`);
     const scWriteTxReceipt = await scWriteTxRequest.wait();
     const scWriteTxHash = scWriteTxReceipt.transactionHash;
     const scWriteTxHashscanUrl = `https://hashscan.io/testnet/transaction/${scWriteTxHash}`;

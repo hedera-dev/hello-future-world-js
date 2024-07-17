@@ -17,6 +17,8 @@ import {
     convertTransactionIdForMirrorNodeApi,
 } from '../util/util.js';
 
+const hfwId = 'HFW-BASE';
+
 async function scriptAccount() {
     // Read in environment variables from `.env` file in parent directory
     dotenv.config({ path: '../.env' });
@@ -45,8 +47,9 @@ async function scriptAccount() {
     const accountCreateTx = await new AccountCreateTransaction({
         initialBalance: new Hbar(5),
         key: account1PrivateKey,
-        accountMemo: `Hello Future World from ${yourName}'s first account!`,
+        accountMemo: `Hello Future World from ${yourName}'s first account! ${hfwId}`,
     })
+        .setTransactionMemo(hfwId)
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
 
@@ -134,6 +137,7 @@ async function scriptAccount() {
 
     // TODO Revisit to consider whether to use 1 debit + multiple credits
     const transferTx = await new TransferTransaction()
+        .setTransactionMemo(hfwId)
         // Debit 5 hbars from the operator account
         .addHbarTransfer(operatorId, new Hbar(-662607015, HbarUnit.Tinybar))
         // Credit 5 hbars from the new account
