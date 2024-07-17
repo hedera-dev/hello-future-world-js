@@ -8,12 +8,15 @@ import dotenv from 'dotenv';
 import {
     HELLIP_CHAR,
     blueLog,
+    metricsTrackOnHcs,
 } from '../util/util.js';
 
 const hfwId = 'HFW-HSCS';
 const solidityFileName = 'my_contract_sol_MyContract';
 
 async function scriptHscsSmartContract() {
+    metricsTrackOnHcs('scriptHscsSmartContract', 'run');
+
     // Read in environment variables from `.env` file in parent directory
     dotenv.config({ path: '../.env' });
 
@@ -75,6 +78,8 @@ async function scriptHscsSmartContract() {
     const [scReadQueryResult] = await myContract.functions.greet();
     console.log('Smart contract read query result', scReadQueryResult);
     console.log('');
+
+    metricsTrackOnHcs('scriptHscsSmartContract', 'complete');
 }
 
 scriptHscsSmartContract();

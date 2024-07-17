@@ -9,6 +9,9 @@ const {
     Mnemonic,
 } = require('@hashgraph/sdk');
 const dotenv = require('dotenv');
+const {
+    metricsTrackOnHcs,
+} = require('../util/util.js');
 
 const DEFAULT_VALUES = {
     dotEnvFilePath: path.resolve(__dirname, '../.env'),
@@ -18,6 +21,8 @@ const DEFAULT_VALUES = {
 };
 
 async function initDotEnvForApp() {
+    metricsTrackOnHcs('initDotEnvForApp', 'begin');
+
     // prompt for inputs
     const {
         allowOverwrite1stChar,
@@ -29,6 +34,7 @@ async function initDotEnvForApp() {
         console.log('OK, overwriting .env file');
         const fileName = DEFAULT_VALUES.dotEnvFilePath;
         await fs.writeFile(fileName, dotEnvText);
+        metricsTrackOnHcs('initDotEnvForApp', 'overwrite');
     } else {
         console.log('OK, leaving current .env file as it was');
     }

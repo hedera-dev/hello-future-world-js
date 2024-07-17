@@ -11,11 +11,14 @@ import dotenv from 'dotenv';
 import {
     HELLIP_CHAR,
     blueLog,
+    metricsTrackOnHcs,
 } from '../util/util.js';
 
 const hfwId = 'HFW-HTS';
 
 async function scriptHtsFungibleToken() {
+    metricsTrackOnHcs('scriptHtsFungibleToken', 'run');
+
     // Read in environment variables from `.env` file in parent directory
     dotenv.config({ path: '../.env' });
 
@@ -102,6 +105,8 @@ async function scriptHtsFungibleToken() {
         tokenVerifyJson?.total_supply;
     console.log('The total supply of this token:', tokenVerifyTotalSupply);
     console.log('');
+
+    metricsTrackOnHcs('scriptHtsFungibleToken', 'complete');
 }
 
 scriptHtsFungibleToken();

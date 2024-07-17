@@ -15,11 +15,14 @@ import {
     HELLIP_CHAR,
     blueLog,
     convertTransactionIdForMirrorNodeApi,
+    metricsTrackOnHcs,
 } from '../util/util.js';
 
 const hfwId = 'HFW-BASE';
 
 async function scriptAccount() {
+    metricsTrackOnHcs('scriptAccount', 'run');
+
     // Read in environment variables from `.env` file in parent directory
     dotenv.config({ path: '../.env' });
 
@@ -207,6 +210,8 @@ async function scriptAccount() {
         transferTxVerifyHashscanUrl
     );
     console.log('');
+
+    metricsTrackOnHcs('scriptAccount', 'complete');
 }
 
 scriptAccount();

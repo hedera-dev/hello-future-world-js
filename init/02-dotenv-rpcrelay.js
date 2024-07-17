@@ -6,6 +6,9 @@ const dotenv = require('dotenv');
 const {
     PrivateKey,
 } = require('@hashgraph/sdk');
+const {
+    metricsTrackOnHcs,
+} = require('../util/util.js');
 
 const DEFAULT_VALUES = {
     dotEnvFilePath: path.resolve(__dirname, '../.rpcrelay.env'),
@@ -13,6 +16,8 @@ const DEFAULT_VALUES = {
 };
 
 async function initDotEnvForRpcRelay() {
+    metricsTrackOnHcs('initDotEnvForRpcRelay', 'begin');
+
     // read in initial values for env variables that have been set
     dotenv.config({ path: DEFAULT_VALUES.appDotEnvFilePath });
     const {
@@ -43,6 +48,7 @@ MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com/
     await fs.writeFile(fileName, dotEnvText);
 
     console.log('OK, wrote .rpcrelay.env file');
+    metricsTrackOnHcs('initDotEnvForRpcRelay', 'overwrite');
 }
 
 initDotEnvForRpcRelay();

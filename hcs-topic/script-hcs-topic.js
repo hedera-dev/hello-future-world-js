@@ -11,11 +11,14 @@ import dotenv from 'dotenv';
 import {
     HELLIP_CHAR,
     blueLog,
+    metricsTrackOnHcs,
 } from '../util/util.js';
 
 const hfwId = 'HFW-HCS';
 
 async function scriptHcsTopic() {
+    metricsTrackOnHcs('scriptHcsTopic', 'run');
+
     // Read in environment variables from `.env` file in parent directory
     dotenv.config({ path: '../.env' });
 
@@ -123,6 +126,8 @@ async function scriptHcsTopic() {
         });
     console.log('Messages retrieved from this topic:', topicVerifyMessagesParsed);
     console.log('');
+
+    metricsTrackOnHcs('scriptHcsTopic', 'complete');
 }
 
 scriptHcsTopic();
