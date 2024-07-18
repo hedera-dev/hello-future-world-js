@@ -38,7 +38,7 @@ async function scriptHtsFungibleToken() {
     blueLog('Creating new HTS token' + HELLIP_CHAR);
     const tokenCreateTx = await new TokenCreateTransaction()
         .setTransactionMemo(hfwId)
-        .setTokenMemo(`${hfwId} topic by ${yourName}`)
+        .setTokenMemo(`${hfwId} token by ${yourName}`)
         // HTS `TokenType.FungibleCommon` behaves similarly to ERC20
         .setTokenType(TokenType.FungibleCommon)
         // Configure token options: name, symbol, decimals, initial supply

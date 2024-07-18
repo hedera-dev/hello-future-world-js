@@ -36,7 +36,7 @@ and follow the instructions in the "pre-requisites" section of the accompanying 
 
 To run on Gitpod (a cloud development environment), click the button below:
 
-<a href="https://gitpod.io/?autostart=true#https://github.com/hedera-dev/hello-future-world-js" target="_blank" rel="noreferrer">
+<a href="https://gitpod.io/?autostart=true&editor=code&workspaceClass=g1-standard#https://github.com/hedera-dev/hello-future-world-js" target="_blank" rel="noreferrer">
   <img src="./img/gitpod-open-button.svg" />
 </a>
 
