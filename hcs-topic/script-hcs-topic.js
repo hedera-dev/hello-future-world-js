@@ -9,12 +9,13 @@ import {
 } from '@hashgraph/sdk';
 import dotenv from 'dotenv';
 import {
-    HELLIP_CHAR,
     blueLog,
     metricsTrackOnHcs,
 } from '../util/util.js';
 
 const hfwId = 'HFW-HCS';
+
+let client;
 
 async function scriptHcsTopic() {
     metricsTrackOnHcs('scriptHcsTopic', 'run');
@@ -31,11 +32,11 @@ async function scriptHcsTopic() {
     }
     const operatorId = AccountId.fromString(operatorIdStr);
     const operatorKey = PrivateKey.fromStringECDSA(operatorKeyStr);
-    const client = Client.forTestnet().setOperator(operatorId, operatorKey);
+    client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
     // NOTE: Create a HCS topic
     // Step (1) in the accompanying tutorial
-    blueLog('Creating new HCS topic' + HELLIP_CHAR);
+    blueLog('Creating new HCS topic');
     const topicCreateTx = await new TopicCreateTransaction()
         .setTransactionMemo(hfwId)
         .setTopicMemo(`HFW-HCS topic by ${yourName}`)
@@ -96,7 +97,7 @@ async function scriptHcsTopic() {
     // This is a manual step, the code below only outputs the URL to visit
 
     // View your topic on HashScan
-    blueLog('View the topic on HashScan' + HELLIP_CHAR);
+    blueLog('View the topic on HashScan');
     const topicVerifyHashscanUrl = `https://hashscan.io/testnet/topic/${topicId.toString()}`;
     console.log('Paste URL in browser:', topicVerifyHashscanUrl);
     console.log('');
@@ -106,7 +107,7 @@ async function scriptHcsTopic() {
 
     // NOTE: Verify topic using Mirror Node API
     // Step (4) in the accompanying tutorial
-    blueLog('Get topic data from the Hedera Mirror Node' + HELLIP_CHAR);
+    blueLog('Get topic data from the Hedera Mirror Node');
     const topicVerifyMirrorNodeApiUrl =
         `https://testnet.mirrornode.hedera.com/api/v1/topics/${topicId.toString()}/messages?encoding=base64&limit=5&order=asc&sequencenumber=1`;
     console.log(
@@ -130,4 +131,10 @@ async function scriptHcsTopic() {
     metricsTrackOnHcs('scriptHcsTopic', 'complete');
 }
 
-scriptHcsTopic();
+scriptHcsTopic().catch((ex) => {
+    if (client) {
+        client.close();
+    }
+    console.error(ex);
+    metricsTrackOnHcs('scriptHcsTopic', 'error');
+});

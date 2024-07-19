@@ -6,7 +6,6 @@ import { Wallet } from '@ethersproject/wallet';
 import { ContractFactory } from '@ethersproject/contracts';
 import dotenv from 'dotenv';
 import {
-    HELLIP_CHAR,
     blueLog,
     metricsTrackOnHcs,
 } from '../util/util.js';
@@ -30,7 +29,7 @@ async function scriptHscsSmartContract() {
     }
 
     // initialise operator account
-    blueLog('Initialising operator account' + HELLIP_CHAR);
+    blueLog('Initialising operator account');
     const rpcProvider = new JsonRpcProvider(rpcUrl);
     const operatorWallet = new Wallet(operatorKeyStr, rpcProvider);
     const operatorAddress = operatorWallet.address;
@@ -39,7 +38,7 @@ async function scriptHscsSmartContract() {
     console.log('');
 
     // Compile smart contract
-    blueLog('Reading compiled smart contract artefacts' + HELLIP_CHAR);
+    blueLog('Reading compiled smart contract artefacts');
     const abi = await fs.readFile(`${solidityFileName}.abi`, { encoding: 'utf8' });
     const evmBytecode = await fs.readFile(`${solidityFileName}.bin`, { encoding: 'utf8' });
     console.log('Compiled smart contract ABI:', abi.substring(0, 32), HELLIP_CHAR);
@@ -49,7 +48,7 @@ async function scriptHscsSmartContract() {
     // Deploy smart contract
     // NOTE: Prepare smart contract for deployment
     // Step (2) in the accompanying tutorial
-    blueLog('Deploying smart contract' + HELLIP_CHAR);
+    blueLog('Deploying smart contract');
     const myContractFactory = new ContractFactory(abi, evmBytecode, operatorWallet);
     const myContract = await myContractFactory.deploy();
     await myContract.deployTransaction.wait();
@@ -62,7 +61,7 @@ async function scriptHscsSmartContract() {
     // Write data to smart contract
     // NOTE: Invoke a smart contract transaction
     // Step (3) in the accompanying tutorial
-    blueLog('Write data to smart contract' + HELLIP_CHAR);
+    blueLog('Write data to smart contract');
     const scWriteTxRequest = await myContract.functions.introduce(`${yourName} - ${hfwId}`);
     const scWriteTxReceipt = await scWriteTxRequest.wait();
     const scWriteTxHash = scWriteTxReceipt.transactionHash;
@@ -74,7 +73,7 @@ async function scriptHscsSmartContract() {
     // Read data from smart contract
     // NOTE: Invoke a smart contract query
     // Step (4) in the accompanying tutorial
-    blueLog('Read data from smart contract' + HELLIP_CHAR);
+    blueLog('Read data from smart contract');
     const [scReadQueryResult] = await myContract.functions.greet();
     console.log('Smart contract read query result', scReadQueryResult);
     console.log('');
@@ -82,4 +81,10 @@ async function scriptHscsSmartContract() {
     metricsTrackOnHcs('scriptHscsSmartContract', 'complete');
 }
 
-scriptHscsSmartContract();
+scriptHscsSmartContract().catch((ex) => {
+    if (client) {
+        client.close();
+    }
+    console.error(ex);
+    metricsTrackOnHcs('scriptHscsSmartContract', 'error');
+});

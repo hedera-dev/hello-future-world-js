@@ -12,13 +12,14 @@ import {
 } from '@hashgraph/sdk';
 import dotenv from 'dotenv';
 import {
-    HELLIP_CHAR,
     blueLog,
     convertTransactionIdForMirrorNodeApi,
     metricsTrackOnHcs,
 } from '../util/util.js';
 
 const hfwId = 'HFW-BASE';
+
+let client;
 
 async function scriptAccount() {
     metricsTrackOnHcs('scriptAccount', 'run');
@@ -38,7 +39,7 @@ async function scriptAccount() {
     const operatorKey = PrivateKey.fromStringECDSA(operatorKeyStr);
 
     // The client operator ID and key is the account that will be automatically set to pay for the transaction fees for each transaction
-    const client = Client.forTestnet().setOperator(operatorId, operatorKey);
+    client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
     // Generate a key for your new account
     const account1PrivateKey = PrivateKey.generateECDSA();
@@ -46,7 +47,7 @@ async function scriptAccount() {
     // NOTE: Create new account using AccountCreateTransaction,
     // setting the initial hbar balance of 5 and an account key
     // Step (1) in the accompanying tutorial
-    blueLog('Creating, signing and submitting the account create transaction' + HELLIP_CHAR);
+    blueLog('Creating, signing and submitting the account create transaction');
     const accountCreateTx = await new AccountCreateTransaction({
         initialBalance: new Hbar(5),
         key: account1PrivateKey,
@@ -82,7 +83,7 @@ async function scriptAccount() {
     console.log('The new account balance is: ', hbarBalance.toString());
     console.log('');
 
-    blueLog('Get account data from the Hedera Mirror Node' + HELLIP_CHAR);
+    blueLog('Get account data from the Hedera Mirror Node');
 
     // Wait for 6s for record files (blocks) to propagate to mirror nodes
     await new Promise((resolve) => setTimeout(resolve, 6_000));
@@ -115,7 +116,7 @@ async function scriptAccount() {
     // console.log('');
 
     // View your account on HashScan
-    blueLog('View the account on HashScan' + HELLIP_CHAR);
+    blueLog('View the account on HashScan');
     const accountVerifyHashscanUrl = `https://hashscan.io/testnet/account/${account1Id.toString()}`;
     console.log('Paste URL in browser:', accountVerifyHashscanUrl);
     console.log('');
@@ -123,7 +124,7 @@ async function scriptAccount() {
     // TODO revisit this, determine whether necessary after writing accompanying tutorial
     // and measuring time taken to complete, etc.
     // //View the account create transaction on HashScan
-    // blueLog('View the account create transaction on HashScan' + HELLIP_CHAR);
+    // blueLog('View the account create transaction on HashScan');
     // const accountCreateTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${accountCreateTransactionId}`;
     // console.log(
     //     'Copy and paste this URL in your browser: ',
@@ -136,7 +137,7 @@ async function scriptAccount() {
 
     // NOTE: Transfer HBAR using TransferTransaction
     // Step (2) in the accompanying tutorial
-    blueLog('Creating, signing, and submitting the transfer transaction' + HELLIP_CHAR);
+    blueLog('Creating, signing, and submitting the transfer transaction');
 
     // TODO Revisit to consider whether to use 1 debit + multiple credits
     const transferTx = await new TransferTransaction()
@@ -176,7 +177,7 @@ async function scriptAccount() {
 
     client.close();
 
-    blueLog('Get transfer transaction data from the Hedera Mirror Node' + HELLIP_CHAR);
+    blueLog('Get transfer transaction data from the Hedera Mirror Node');
 
     // Wait for 6s for record files (blocks) to propagate to mirror nodes
     await new Promise((resolve) => setTimeout(resolve, 6_000));
@@ -203,7 +204,7 @@ async function scriptAccount() {
     console.log('');
 
     // View the transaction in HashScan
-    blueLog('View the transfer transaction transaction in HashScan' + HELLIP_CHAR);
+    blueLog('View the transfer transaction transaction in HashScan');
     const transferTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${transferTxId}`;
     console.log(
         'Copy and paste this URL in your browser:',
@@ -214,4 +215,10 @@ async function scriptAccount() {
     metricsTrackOnHcs('scriptAccount', 'complete');
 }
 
-scriptAccount();
+scriptAccount().catch((ex) => {
+    if (client) {
+        client.close();
+    }
+    console.error(ex);
+    metricsTrackOnHcs('scriptAccount', 'error');
+});

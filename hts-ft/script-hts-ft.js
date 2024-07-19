@@ -9,12 +9,13 @@ import {
 } from '@hashgraph/sdk';
 import dotenv from 'dotenv';
 import {
-    HELLIP_CHAR,
     blueLog,
     metricsTrackOnHcs,
 } from '../util/util.js';
 
 const hfwId = 'HFW-HTS';
+
+let client;
 
 async function scriptHtsFungibleToken() {
     metricsTrackOnHcs('scriptHtsFungibleToken', 'run');
@@ -31,11 +32,11 @@ async function scriptHtsFungibleToken() {
     }
     const operatorId = AccountId.fromString(operatorIdStr);
     const operatorKey = PrivateKey.fromStringECDSA(operatorKeyStr);
-    const client = Client.forTestnet().setOperator(operatorId, operatorKey);
+    client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
     // NOTE: Create a HTS token
     // Step (1) in the accompanying tutorial
-    blueLog('Creating new HTS token' + HELLIP_CHAR);
+    blueLog('Creating new HTS token');
     const tokenCreateTx = await new TokenCreateTransaction()
         .setTransactionMemo(hfwId)
         .setTokenMemo(`${hfwId} token by ${yourName}`)
@@ -79,7 +80,7 @@ async function scriptHtsFungibleToken() {
     // This is a manual step, the code below only outputs the URL to visit
 
     // View your token on HashScan
-    blueLog('View the token on HashScan' + HELLIP_CHAR);
+    blueLog('View the token on HashScan');
     const tokenVerifyHashscanUrl = `https://hashscan.io/testnet/token/${tokenId.toString()}`;
     console.log('Paste URL in browser:', tokenVerifyHashscanUrl);
     console.log('');
@@ -89,7 +90,7 @@ async function scriptHtsFungibleToken() {
 
     // NOTE: Verify token using Mirror Node API
     // Step (3) in the accompanying tutorial
-    blueLog('Get token data from the Hedera Mirror Node' + HELLIP_CHAR);
+    blueLog('Get token data from the Hedera Mirror Node');
     const tokenVerifyMirrorNodeApiUrl =
         `https://testnet.mirrornode.hedera.com/api/v1/tokens/${tokenId.toString()}`;
     console.log(
@@ -109,4 +110,10 @@ async function scriptHtsFungibleToken() {
     metricsTrackOnHcs('scriptHtsFungibleToken', 'complete');
 }
 
-scriptHtsFungibleToken();
+scriptHtsFungibleToken().catch((ex) => {
+    if (client) {
+        client.close();
+    }
+    console.error(ex);
+    metricsTrackOnHcs('scriptHtsFungibleToken', 'error');
+});
