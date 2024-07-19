@@ -34,11 +34,13 @@ async function scriptHcsTopic() {
     const operatorKey = PrivateKey.fromStringECDSA(operatorKeyStr);
     client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
-    // NOTE: Create a HCS topic
+    // NOTE: Create a Hedera Consensus Service topic
     // Step (1) in the accompanying tutorial
     blueLog('Creating new HCS topic');
     const topicCreateTx = await new TopicCreateTransaction()
+        //Set the transaction memo with the hellow future world ID
         .setTransactionMemo(hfwId)
+        //Set the topic memo
         .setTopicMemo(`HFW-HCS topic by ${yourName}`)
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
@@ -65,8 +67,11 @@ async function scriptHcsTopic() {
     // NOTE: Publish a message to the HCS topic
     // Step (2) in the accompanying tutorial
     const topicMsgSubmitTx = await new TopicMessageSubmitTransaction()
+        //Set the transaction memo with the hello future world ID
         .setTransactionMemo(hfwId)
+        //The ID of the topic that was created in the previous step
         .setTopicId(topicId)
+        //Set the topic message contents
         .setMessage(`Hello HCS! - ${yourName}`)
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
