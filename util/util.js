@@ -16,6 +16,7 @@ const DEFAULT_VALUES = {
     mainDotEnvFilePath: path.resolve(__dirname, '../.env'),
     metricsDotEnvFilePath: path.resolve(__dirname, '../.metrics.env'),
     loggerFilePath: path.resolve(__dirname, '../logger.json'),
+    gitRefsHeadMainFilePath: path.resolve(__dirname, '../.git/refs/heads/main'),
     metricsAccountId: '',
     metricsAccountKey: '',
     metricsHcsTopicId: '0.0.4573319',
@@ -30,7 +31,7 @@ function displayDuration(ms) {
     const seconds = (ms / 1_000);
     const minutes = Math.floor(seconds / 60);
     let out = (seconds % 60).toFixed(1) + 's';
-    if (minutes > 0) {
+    if (minutes !== 0) {
         out = `${minutes}min ${out}`;
     }
     return out;
@@ -51,8 +52,7 @@ async function createLogger({
     }
 
     // obtain package.json version number and git commit hash
-    const gitRefsHeadMainFilePath = path.resolve(process.cwd(), '../.git/refs/heads/main');
-    const gitRefsHeadMain = await fs.readFile(gitRefsHeadMainFilePath);
+    const gitRefsHeadMain = await fs.readFile(DEFAULT_VALUES.gitRefsHeadMainFilePath);
     const gitCommitHash = gitRefsHeadMain.toString().trim().substring(0, 8);
     const version = `${packageJson.version}-${gitCommitHash}`;
     console.log({ version });
@@ -128,7 +128,9 @@ async function createLogger({
 
     async function logCompleteImpl() {
         await saveLoggerStats(logger);
-        logMetricsSummary();
+        if (logger.scriptCategory === 'task') {
+            logMetricsSummary();
+        }
     }
 
     function logError(...strings) {
@@ -289,15 +291,19 @@ async function logMetricsSummary() {
 
     console.log('Has completed a task:', hasCompletedFirstTask);
     console.log('First task completed ID:', firstTaskScript.scriptId);
-    console.log('Time to first task completion:', displayDuration(timeToHelloWorld));
+    if (timeToHelloWorld < 0) {
+        console.log('Time to first task completion:', 'Unknown, script was not used to initialise.');
+    } else {
+        console.log('Time to first task completion:', displayDuration(timeToHelloWorld));
+    }
     console.log('Total number of task completions:', totalCountOfTaskCompletions);
-    console.log('Completed tasks:');
+    console.log('\nCompleted tasks:', completedTaskDurations.length);
     completedTaskDurations.forEach((info, index) => {
         console.log(`(${index + 1}) Task ID:`, info.name);
         console.log('Time taken to complete:', displayDuration(info.duration));
         console.log('Errors prior to completion:', info.errors);
     });
-    console.log('Attempted but incomplete tasks:', );
+    console.log('\nAttempted but incomplete tasks:', incompleteAttemptedTaskDurations.length);
     incompleteAttemptedTaskDurations.forEach((info, index) => {
         console.log(`(${index + 1}) Task ID:`, info.name);
         console.log('Time taken for attempts:', displayDuration(info.duration));
