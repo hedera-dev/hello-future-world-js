@@ -75,7 +75,7 @@ async function createLogger({
     };
 
     const logger = {
-        scriptId: `${DEFAULT_VALUES.metricsHcsTopicMemo}-${scriptId}`,
+        scriptId,
         scriptCategory,
         version,
         step: 0,
@@ -289,7 +289,7 @@ async function logMetricsSummary() {
 
     console.log('Has completed a task:', hasCompletedFirstTask);
     console.log('First task completed ID:', firstTaskScript.scriptId);
-    console.log('Time to first task completion:', timeToHelloWorld);
+    console.log('Time to first task completion:', displayDuration(timeToHelloWorld));
     console.log('Total number of task completions:', totalCountOfTaskCompletions);
     console.log('Completed tasks:');
     completedTaskDurations.forEach((info, index) => {
@@ -495,8 +495,8 @@ async function metricsTrackOnHcs({
         // Save the message in a queue immediately
         const metricsMessage = {
             id: metricsId,
-            cat,
             v,
+            cat,
             action,
             detail,
             time,
