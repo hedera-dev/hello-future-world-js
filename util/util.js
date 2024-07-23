@@ -376,7 +376,11 @@ async function queryAccountByPrivateKey(privateKeyStr) {
 async function getMetricsConfig() {
     // read in current metrics config
     dotenv.config({
-        path: [DEFAULT_VALUES.metricsDotEnvFilePath, DEFAULT_VALUES.mainDotEnvFilePath],
+        path: [DEFAULT_VALUES.mainDotEnvFilePath],
+        override: false,
+    });
+    dotenv.config({
+        path: [DEFAULT_VALUES.metricsDotEnvFilePath],
         override: true,
     });
 
