@@ -119,6 +119,7 @@ async function createLogger({
         logCompleteWithoutClose,
         logError,
         logErrorWithoutClose,
+        gracefullyCloseClient,
         getStartMessage,
         getCompleteMessage,
         getErrorMessage,
@@ -182,7 +183,7 @@ async function createLogger({
             await logMetricsSummary();
         }
         if (shouldClose) {
-            logger.client?.close();
+            await gracefullyCloseClient();
         }
     }
 
@@ -197,7 +198,7 @@ async function createLogger({
         const [msg] = logErrorImplStart();
         await metricsTrackOnHcs(logger, msg);
         await writeLoggerFile(logger);
-        logger.client?.close();
+        await gracefullyCloseClient();
         return log(...strings);
     }
 
@@ -212,6 +213,15 @@ async function createLogger({
             logger.stats.countErrorBeforeFirstComplete += 1;
         }
         return [msg];
+    }
+
+    async function gracefullyCloseClient() {
+        await (new Promise((resolve) => { setTimeout(resolve, 100) }));
+        try {
+            logger.client?.close();
+        } catch (ex) {
+            // Do nothing, intentionally ignore any errors during client close
+        }
     }
 
     function getStartMessage() {
