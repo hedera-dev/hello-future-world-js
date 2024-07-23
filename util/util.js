@@ -9,21 +9,300 @@ const {
     TopicCreateTransaction,
     TopicMessageSubmitTransaction,
 } = require('@hashgraph/sdk');
+const packageJson = require('../package.json');
+const { read } = require('node:fs');
 
 const DEFAULT_VALUES = {
     mainDotEnvFilePath: path.resolve(__dirname, '../.env'),
     metricsDotEnvFilePath: path.resolve(__dirname, '../.metrics.env'),
+    loggerFilePath: path.resolve(__dirname, '../logger.json'),
     metricsAccountId: '',
     metricsAccountKey: '',
     metricsHcsTopicId: '0.0.4573319',
-    metricsHcsTopicMemo: 'HFWv2',
+    metricsHcsTopicMemo: 'HFWV2',
 };
 
 const ANSI_ESCAPE_CODE_BLUE = '\x1b[34m%s\x1b[0m';
 const HELLIP_CHAR = '…';
+const hashSha256 = crypto.createHash('sha256');
+
+function displayDuration(ms) {
+    const seconds = (ms / 1_000);
+    const minutes = Math.floor(seconds / 60);
+    let out = (seconds % 60).toFixed(1) + 's';
+    if (minutes > 0) {
+        out = `${minutes}min ${out}`;
+    }
+    return out;
+}
+
+async function readLoggerFile() {
+    let loggerFile;
+    try {
+        const loggerFileJson  = await fs.readFile(DEFAULT_VALUES.loggerFilePath);
+        loggerFile = JSON.parse(loggerFileJson);
+    } catch (ex) {
+        // do nothing
+    }
+    return (loggerFile || {});
+}
+
+async function createLogger({
+    scriptId,
+    scriptCategory,
+}) {
+    if (typeof scriptId !== 'string' ||
+        scriptId.length < 2 ||
+        !scriptId.match(/^[a-zA-Z0-9_]+$/)
+    ) {
+        throw new Error('Invalid scriptId');
+    }
+    if (['setup', 'task'].indexOf(scriptCategory) < 0) {
+        throw new Error('Invalid script category');
+    }
+
+    // obtain package.json version number and git commit hash
+    const gitRefsHeadMainFilePath = path.resolve(process.cwd(), '../.git/refs/heads/main');
+    const gitRefsHeadMain = await fs.readFile(gitRefsHeadMainFilePath);
+    const gitCommitHash = gitRefsHeadMain.toString().trim().substring(0, 8);
+    const version = `${packageJson.version}-${gitCommitHash}`;
+    console.log({ version });
+
+    // read previous stats collected for this script, if any
+    const loggerFile = await readLoggerFile();
+    const loggerStatsPrev = {
+        firstStart: Number.MAX_SAFE_INTEGER,
+        lastStart: 0,
+        countStart: 0,
+        firstComplete: Number.MAX_SAFE_INTEGER,
+        lastComplete: 0,
+        countComplete: 0,
+        firstError: Number.MAX_SAFE_INTEGER,
+        lastError: 0,
+        countError: 0,
+        countErrorBeforeFirstComplete: 0,
+        countErrorAfterFirstComplete: 0,
+        ...(loggerFile?.[scriptId] || {}),
+    };
+
+    const logger = {
+        scriptId: `${DEFAULT_VALUES.metricsHcsTopicMemo}-${scriptId}`,
+        scriptCategory,
+        version,
+        step: 0,
+        lastMsg: '',
+        log,
+        logSection,
+        logStart,
+        logComplete,
+        logError,
+        getStartMessage,
+        getCompleteMessage,
+        getErrorMessage,
+        stats: loggerStatsPrev,
+    };
+
+    function log(...strings) {
+        logger.step += 1;
+        logger.lastMsg = ([...strings])[0];
+        return console.log(...strings);
+    }
+
+    function logSection(...strings) {
+        logger.step += 1;
+        logger.lastMsg = ([...strings])[0];
+        console.log('');
+        return blueLog(...strings);
+    }
+
+    function logStart(...strings) {
+        const retVal = logSection(...strings);
+        const msg = getStartMessage();
+        logger.stats.lastStart = Math.max(msg.time, logger.stats.lastStart);
+        logger.stats.firstStart = Math.min(msg.time, logger.stats.firstStart);
+        logger.stats.countStart += 1;
+        saveLoggerStats(logger);
+        metricsTrackOnHcs(msg);
+        return retVal;
+    }
+
+    function logComplete(...strings) {
+        const retVal = logSection(...strings);
+        const msg = getCompleteMessage();
+        logger.stats.lastComplete = Math.max(msg.time, logger.stats.lastComplete);
+        logger.stats.firstComplete = Math.min(msg.time, logger.stats.firstComplete);
+        logger.stats.countComplete += 1;
+        saveLoggerStats(logger);
+        metricsTrackOnHcs(msg);
+        logMetricsSummary();
+        return retVal;
+    }
+
+    function logError(...strings) {
+        const msg = getErrorMessage();
+        metricsTrackOnHcs(msg);
+        logger.stats.lastError = Math.max(msg.time, logger.stats.lastError);
+        logger.stats.firstError = Math.min(msg.time, logger.stats.firstError);
+        logger.stats.countError += 1;
+        if (logger.stats.countComplete > 0) {
+            logger.stats.countErrorAfterFirstComplete += 1;
+        } else {
+            logger.stats.countErrorBeforeFirstComplete += 1;
+        }
+        saveLoggerStats(logger);
+        return log(...strings);
+    }
+
+    function getStartMessage() {
+        return {
+            cat: 'start',
+            v: logger.version,
+            action: scriptId,
+            detail: '',
+            time: Date.now(),
+        };
+    }
+
+    function getCompleteMessage() {
+        return {
+            cat: 'complete',
+            v: logger.version,
+            action: scriptId,
+            detail: '',
+            time: Date.now(),
+        };
+    }
+
+    function getErrorMessage() {
+        const lastMsgHashedTruncated = hashSha256
+            .update(logger.lastMsg)
+            .digest('hex')
+            .substring(0, 8);
+        return {
+            cat: 'error',
+            v: logger.version,
+            action: scriptId,
+            detail: `${logger.step}-${lastMsgHashedTruncated}`,
+            time: Date.now(),
+        };
+    }
+
+    return logger;
+}
+
+async function saveLoggerStats(logger) {
+    const loggerFile = await readLoggerFile();
+    loggerFile[logger.scriptId] = {
+        scriptCategory: logger.scriptCategory,
+        ...logger.stats,
+    };
+    const loggerFileJsonUpdated = JSON.stringify(loggerFile, undefined, 2);
+    await fs.writeFile(DEFAULT_VALUES.loggerFilePath, loggerFileJsonUpdated);
+}
+
+async function logMetricsSummary() {
+    // read previous stats collected for all scripts
+    const loggerFile = await readLoggerFile();
+
+    // find first setup script
+    // find first task script
+    let firstSetupScript;
+    let firstTaskScript;
+    const completedTasks = [];
+    const incompleteTasks = [];
+    Object.keys(loggerFile).forEach((scriptId) => {
+        const scriptStats = loggerFile[scriptId];
+        const {
+            scriptCategory,
+            firstStart,
+            countComplete,
+        } = scriptStats;
+        scriptStats.scriptId = scriptId;
+        switch (scriptCategory) {
+            case 'setup':
+                if (!firstSetupScript ||
+                    (
+                        firstStart < firstSetupScript.firstStart &&
+                        countComplete > 0
+                    )) {
+                    firstSetupScript = scriptStats;
+                }
+                break;
+            case 'task':
+                if (!firstTaskScript ||
+                    (
+                        firstStart < firstTaskScript.firstStart &&
+                        countComplete > 0
+                    )) {
+                    firstTaskScript = scriptStats;
+                }
+                if (countComplete > 0) {
+                    completedTasks.push(scriptStats);
+                } else {
+                    incompleteTasks.push(scriptStats);
+                }
+                break;
+        }
+    });
+
+    // Timestamp difference between 1st `start` in setup to 1st `complete` in task
+    // --> Quantify **time to hello world**
+    const hasCompletedFirstTask = !!(firstSetupScript && firstTaskScript);
+    const timeToHelloWorld = hasCompletedFirstTask ?
+        firstTaskScript.firstComplete - firstSetupScript.firstStart :
+        0;
+
+    // Timestamp difference between 1st `start` in a task to 1st `complete` in the same task
+    // --> Quantify time taken to complete specific task
+    const totalCountOfTaskCompletions = completedTasks.reduce((count, task) => {
+        return count + task.countComplete;
+    }, 0);
+    const completedTaskDurations = completedTasks.map((task) => {
+        const timeToComplete = task.firstComplete - task.firstStart;
+        const errorsBeforeFirstComplete = task.countErrorBeforeFirstComplete;
+        return {
+            name: task.scriptId,
+            duration: timeToComplete,
+            errors: errorsBeforeFirstComplete,
+        };
+    });
+
+    // Count of `error` occurrences between 1st instance of a `start`,
+    // and 1st instance of a `complete` in the same task
+    // --> Quantify number of friction points
+    // NOTE this is included in `errorsBeforeFirstComplete` computed above
+
+    // Count of 1st instance of `start` without any corresponding `complete` for the same task
+    // --> Quantify the completion rate (and therefore drop-off rate)
+    const incompleteAttemptedTaskDurations = incompleteTasks.map((task) => {
+        timeToLastAttempt = task.lastError - task.firstStart;
+        return {
+            name: task.scriptId,
+            duration: timeToLastAttempt,
+            errors: task.countError,
+        };
+    });
+
+    console.log('Has completed a task:', hasCompletedFirstTask);
+    console.log('First task completed ID:', firstTaskScript.scriptId);
+    console.log('Time to first task completion:', timeToHelloWorld);
+    console.log('Total number of task completions:', totalCountOfTaskCompletions);
+    console.log('Completed tasks:');
+    completedTaskDurations.forEach((info, index) => {
+        console.log(`(${index + 1}) Task ID:`, info.name);
+        console.log('Time taken to complete:', displayDuration(info.duration));
+        console.log('Errors prior to completion:', info.errors);
+    });
+    console.log('Attempted but incomplete tasks:', );
+    incompleteAttemptedTaskDurations.forEach((info, index) => {
+        console.log(`(${index + 1}) Task ID:`, info.name);
+        console.log('Time taken for attempts:', displayDuration(info.duration));
+        console.log('Errors thus far:', info.errors);
+    });
+}
 
 function blueLog(...strings) {
-    console.log(ANSI_ESCAPE_CODE_BLUE, '🔵', ...strings, HELLIP_CHAR);
+    return console.log(ANSI_ESCAPE_CODE_BLUE, '🔵', ...strings, HELLIP_CHAR);
 }
 
 function convertTransactionIdForMirrorNodeApi(txId) {
@@ -175,11 +454,26 @@ async function metricsTopicCreate() {
 
 const metricsMessages = [];
 
-async function metricsTrackOnHcs(action, detail) {
-    if (typeof action !== 'string' || typeof detail !== 'string') {
-        throw new Error();
+async function metricsTrackOnHcs({
+    cat,
+    v,
+    action,
+    detail,
+    time,
+}) {
+    if (typeof cat !== 'string' ||
+        typeof v !== 'string' ||
+        typeof action !== 'string' ||
+        typeof detail !== 'string' ||
+        typeof time !== 'number') {
+        throw new Error('Missing params');
     }
-    const timeStamp = Date.now();
+    if (['start', 'complete', 'error'].indexOf(cat) < 0) {
+        throw new Error('Invalid category:', cat);
+    }
+    if (isNaN(time) || time < 1) {
+        throw new Error('Invalid time:', time);
+    }
 
     let client;
 
@@ -197,9 +491,11 @@ async function metricsTrackOnHcs(action, detail) {
         // Save the message in a queue immediately
         const metricsMessage = {
             id: metricsId,
+            cat,
+            v,
             action,
             detail,
-            time: timeStamp,
+            time,
         };
         metricsMessages.push(metricsMessage);
 
@@ -237,6 +533,11 @@ async function metricsTrackOnHcs(action, detail) {
 }
 
 module.exports = {
+    displayDuration,
+    createLogger,
+    saveLoggerStats,
+    logMetricsSummary,
+
     ANSI_ESCAPE_CODE_BLUE,
     HELLIP_CHAR,
     blueLog,
