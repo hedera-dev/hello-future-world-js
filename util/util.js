@@ -36,12 +36,6 @@ async function createLogger({
         throw new Error('Invalid script category');
     }
 
-    // read in main .env file
-    dotenv.config({
-        path: [DEFAULT_VALUES.mainDotEnvFilePath],
-        override: false,
-    });
-
     // obtain package.json version number and git commit hash
     const gitRefsHeadMain = await fs.readFile(DEFAULT_VALUES.gitRefsHeadMainFilePath);
     const gitCommitHash = gitRefsHeadMain.toString().trim().substring(0, 8);
@@ -65,47 +59,6 @@ async function createLogger({
         ...(loggerFile?.[scriptId] || {}),
     };
 
-    // read ID, account credentials and HCS topic ID from config
-    // falling back on defaults in not present
-    const metricsId = loggerFile?.config?.['metricsId'] ||
-        crypto.randomBytes(16).toString('hex');
-    const metricsAccountId =
-        loggerFile?.config?.['metricsAccountId'] ||
-        process.env.OPERATOR_ACCOUNT_ID ||
-        '';
-    const metricsAccountKey =
-        loggerFile?.config?.['metricsAccountKey'] ||
-        process.env.OPERATOR_ACCOUNT_PRIVATE_KEY ||
-        '';
-    const metricsHcsTopicMemo =
-        loggerFile?.config?.['metricsHcsTopicMemo'] || '';
-    const metricsHcsTopicId =
-        loggerFile?.config?.['metricsHcsTopicId'] || '';
-
-    if (!metricsHcsTopicMemo ||
-        !metricsHcsTopicId
-    ) {
-        throw new Error('Invalid config in logger.json');
-    }
-
-    const config = {
-        scriptCategory: 'config',
-        metricsId,
-        metricsAccountId,
-        metricsAccountKey,
-        metricsHcsTopicMemo,
-        metricsHcsTopicId,
-    };
-
-    let client;
-    let metricsAccountIdObj;
-    let metricsAccountKeyObj;
-    if (metricsAccountId && metricsAccountKey) {
-        metricsAccountIdObj = AccountId.fromString(metricsAccountId);
-        metricsAccountKeyObj = PrivateKey.fromStringECDSA(metricsAccountKey);
-        client = Client.forTestnet().setOperator(metricsAccountIdObj, metricsAccountKeyObj);
-    }
-
     const logger = {
         scriptId,
         scriptCategory,
@@ -124,11 +77,9 @@ async function createLogger({
         getCompleteMessage,
         getErrorMessage,
         stats: loggerStatsPrev,
-        config,
-        client,
-        metricsAccountIdObj,
-        metricsAccountKeyObj,
     };
+
+    await initLoggerConfig(logger);
 
     function log(...strings) {
         logger.step += 1;
@@ -259,6 +210,64 @@ async function createLogger({
     }
 
     return logger;
+}
+
+async function initLoggerConfig(logger) {
+    const tempEnv = {};
+
+    // read in main .env file
+    dotenv.config({
+        path: [DEFAULT_VALUES.mainDotEnvFilePath],
+        processEnv: tempEnv,
+    });
+
+    const loggerFile = await readLoggerFile();
+
+    // read ID, account credentials and HCS topic ID from config
+    // falling back on defaults if not present
+    const metricsId = loggerFile?.config?.['metricsId'] ||
+        crypto.randomBytes(16).toString('hex');
+    const metricsAccountId =
+        loggerFile?.config?.['metricsAccountId'] ||
+        tempEnv.OPERATOR_ACCOUNT_ID ||
+        '';
+    const metricsAccountKey =
+        loggerFile?.config?.['metricsAccountKey'] ||
+        tempEnv.OPERATOR_ACCOUNT_PRIVATE_KEY ||
+        '';
+    const metricsHcsTopicMemo =
+        loggerFile?.config?.['metricsHcsTopicMemo'] || '';
+    const metricsHcsTopicId =
+        loggerFile?.config?.['metricsHcsTopicId'] || '';
+
+    if (!metricsHcsTopicMemo ||
+        !metricsHcsTopicId
+    ) {
+        throw new Error('Invalid config in logger.json');
+    }
+
+    const config = {
+        scriptCategory: 'config',
+        metricsId,
+        metricsAccountId,
+        metricsAccountKey,
+        metricsHcsTopicMemo,
+        metricsHcsTopicId,
+    };
+
+    let client;
+    let metricsAccountIdObj;
+    let metricsAccountKeyObj;
+    if (metricsAccountId && metricsAccountKey) {
+        metricsAccountIdObj = AccountId.fromString(metricsAccountId);
+        metricsAccountKeyObj = PrivateKey.fromStringECDSA(metricsAccountKey);
+        client = Client.forTestnet().setOperator(metricsAccountIdObj, metricsAccountKeyObj);
+    }
+
+    logger.config = config;
+    logger.client = client;
+    logger.metricsAccountIdObj = metricsAccountIdObj;
+    logger.metricsAccountKeyObj = metricsAccountKeyObj;
 }
 
 async function readLoggerFile() {
@@ -394,6 +403,8 @@ async function logMetricsSummary() {
         '\nView HCS metrics on HashScan:',
         '\n',
         `https://hashscan.io/testnet/topic/${loggerFile.config.metricsHcsTopicId}`,
+        `\nUsing the anonymised key: ${loggerFile.config.metricsId}`,
+
     );
 }
 
@@ -512,6 +523,11 @@ async function metricsTrackOnHcs(logger, {
     }
     if (isNaN(time) || time < 1) {
         throw new Error('Invalid time:', time);
+    }
+
+    if (!logger.client) {
+        // attempt to reload client, in case .env file has been recently updated
+        await initLoggerConfig(logger);
     }
 
     const {
