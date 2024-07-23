@@ -549,5 +549,5 @@ module.exports = {
     queryAccountByEvmAddress,
     queryAccountByPrivateKey,
     metricsTopicCreate,
-    metricsTrackOnHcs,
+    // metricsTrackOnHcs,
 };
