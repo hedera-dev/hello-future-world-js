@@ -6,15 +6,19 @@ import { Wallet } from '@ethersproject/wallet';
 import { ContractFactory } from '@ethersproject/contracts';
 import dotenv from 'dotenv';
 import {
-    blueLog,
-    metricsTrackOnHcs,
+    HELLIP_CHAR,
+    createLogger,
 } from '../util/util.js';
 
-const hfwId = 'HFW-HSCS';
+const logger = await createLogger({
+    scriptId: 'hscsSC',
+    scriptCategory: 'task',
+});
 const solidityFileName = 'my_contract_sol_MyContract';
+let client;
 
 async function scriptHscsSmartContract() {
-    metricsTrackOnHcs('scriptHscsSmartContract', 'run');
+    logger.logStart('Hello Future World - HSCS smart contract - start');
 
     // Read in environment variables from `.env` file in parent directory
     dotenv.config({ path: '../.env' });
@@ -29,62 +33,56 @@ async function scriptHscsSmartContract() {
     }
 
     // initialise operator account
-    blueLog('Initialising operator account');
+    logger.logSection('Initialising operator account');
     const rpcProvider = new JsonRpcProvider(rpcUrl);
     const operatorWallet = new Wallet(operatorKeyStr, rpcProvider);
     const operatorAddress = operatorWallet.address;
     const operatorAccountHashscanUrl = `https://hashscan.io/testnet/account/${operatorAddress}`;
-    console.log('Operator account Hashscan URL', operatorAccountHashscanUrl);
-    console.log('');
+    logger.log('Operator account Hashscan URL', operatorAccountHashscanUrl);
 
     // Compile smart contract
-    blueLog('Reading compiled smart contract artefacts');
+    logger.logSection('Reading compiled smart contract artefacts');
     const abi = await fs.readFile(`${solidityFileName}.abi`, { encoding: 'utf8' });
     const evmBytecode = await fs.readFile(`${solidityFileName}.bin`, { encoding: 'utf8' });
-    console.log('Compiled smart contract ABI:', abi.substring(0, 32), HELLIP_CHAR);
-    console.log('Compiled smart contract EVM bytecode:', evmBytecode.substring(0, 32), HELLIP_CHAR);
-    console.log('');
+    logger.log('Compiled smart contract ABI:', abi.substring(0, 32), HELLIP_CHAR);
+    logger.log('Compiled smart contract EVM bytecode:', evmBytecode.substring(0, 32), HELLIP_CHAR);
+
+    // TODO sanity check to test if RPC endpoint is functional/ accessible
 
     // Deploy smart contract
     // NOTE: Prepare smart contract for deployment
     // Step (2) in the accompanying tutorial
-    blueLog('Deploying smart contract');
+    logger.logSection('Deploying smart contract');
     const myContractFactory = new ContractFactory(abi, evmBytecode, operatorWallet);
     const myContract = await myContractFactory.deploy();
     await myContract.deployTransaction.wait();
     const myContractAddress = myContract.address;
     const myContractHashscanUrl = `https://hashscan.io/testnet/contract/${myContractAddress}`;
-    console.log('Deployed smart contract address:', myContractAddress);
-    console.log('Deployed smart contract Hashscan URL:', myContractHashscanUrl);
-    console.log('');
+    logger.log('Deployed smart contract address:', myContractAddress);
+    logger.log('Deployed smart contract Hashscan URL:', myContractHashscanUrl);
 
     // Write data to smart contract
     // NOTE: Invoke a smart contract transaction
     // Step (3) in the accompanying tutorial
-    blueLog('Write data to smart contract');
-    const scWriteTxRequest = await myContract.functions.introduce(`${yourName} - ${hfwId}`);
+    logger.logSection('Write data to smart contract');
+    const scWriteTxRequest = await myContract.functions.introduce(`${yourName} - ${logger.scriptId}`);
     const scWriteTxReceipt = await scWriteTxRequest.wait();
     const scWriteTxHash = scWriteTxReceipt.transactionHash;
     const scWriteTxHashscanUrl = `https://hashscan.io/testnet/transaction/${scWriteTxHash}`;
-    console.log('Smart contract write transaction hash', scWriteTxHash);
-    console.log('Smart contract write transaction Hashscan URL', scWriteTxHashscanUrl);
-    console.log('');
+    logger.log('Smart contract write transaction hash', scWriteTxHash);
+    logger.log('Smart contract write transaction Hashscan URL', scWriteTxHashscanUrl);
 
     // Read data from smart contract
     // NOTE: Invoke a smart contract query
     // Step (4) in the accompanying tutorial
-    blueLog('Read data from smart contract');
+    logger.logSection('Read data from smart contract');
     const [scReadQueryResult] = await myContract.functions.greet();
-    console.log('Smart contract read query result', scReadQueryResult);
-    console.log('');
+    logger.log('Smart contract read query result', scReadQueryResult);
 
-    metricsTrackOnHcs('scriptHscsSmartContract', 'complete');
+    logger.logComplete('Hello Future World - HSCS smart contract - complete');
 }
 
 scriptHscsSmartContract().catch((ex) => {
-    if (client) {
-        client.close();
-    }
-    console.error(ex);
-    metricsTrackOnHcs('scriptHscsSmartContract', 'error');
+    client && client.close();
+    logger ? logger.logError(ex) : console.error(ex);
 });
