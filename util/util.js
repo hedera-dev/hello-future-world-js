@@ -10,32 +10,17 @@ const {
     TopicMessageSubmitTransaction,
 } = require('@hashgraph/sdk');
 const packageJson = require('../package.json');
-const { read } = require('node:fs');
 
 const DEFAULT_VALUES = {
     mainDotEnvFilePath: path.resolve(__dirname, '../.env'),
     metricsDotEnvFilePath: path.resolve(__dirname, '../.metrics.env'),
     loggerFilePath: path.resolve(__dirname, '../logger.json'),
     gitRefsHeadMainFilePath: path.resolve(__dirname, '../.git/refs/heads/main'),
-    metricsAccountId: '',
-    metricsAccountKey: '',
-    metricsHcsTopicId: '0.0.4573319',
-    metricsHcsTopicMemo: 'HFWV2',
 };
 
 const ANSI_ESCAPE_CODE_BLUE = '\x1b[34m%s\x1b[0m';
 const HELLIP_CHAR = '…';
 const hashSha256 = crypto.createHash('sha256');
-
-function displayDuration(ms) {
-    const seconds = (ms / 1_000);
-    const minutes = Math.floor(seconds / 60);
-    let out = (seconds % 60).toFixed(1) + 's';
-    if (minutes !== 0) {
-        out = `${minutes}min ${out}`;
-    }
-    return out;
-}
 
 async function createLogger({
     scriptId,
@@ -50,6 +35,12 @@ async function createLogger({
     if (['setup', 'task'].indexOf(scriptCategory) < 0) {
         throw new Error('Invalid script category');
     }
+
+    // read in main .env file
+    dotenv.config({
+        path: [DEFAULT_VALUES.mainDotEnvFilePath],
+        override: false,
+    });
 
     // obtain package.json version number and git commit hash
     const gitRefsHeadMain = await fs.readFile(DEFAULT_VALUES.gitRefsHeadMainFilePath);
@@ -74,6 +65,47 @@ async function createLogger({
         ...(loggerFile?.[scriptId] || {}),
     };
 
+    // read ID, account credentials and HCS topic ID from config
+    // falling back on defaults in not present
+    const metricsId = loggerFile?.config?.['metricsId'] ||
+        crypto.randomBytes(16).toString('hex');
+    const metricsAccountId =
+        loggerFile?.config?.['metricsAccountId'] ||
+        process.env.OPERATOR_ACCOUNT_ID ||
+        '';
+    const metricsAccountKey =
+        loggerFile?.config?.['metricsAccountKey'] ||
+        process.env.OPERATOR_ACCOUNT_PRIVATE_KEY ||
+        '';
+    const metricsHcsTopicMemo =
+        loggerFile?.config?.['metricsHcsTopicMemo'] || '';
+    const metricsHcsTopicId =
+        loggerFile?.config?.['metricsHcsTopicId'] || '';
+
+    if (!metricsHcsTopicMemo ||
+        !metricsHcsTopicId
+    ) {
+        throw new Error('Invalid config in logger.json');
+    }
+
+    const config = {
+        scriptCategory: 'config',
+        metricsId,
+        metricsAccountId,
+        metricsAccountKey,
+        metricsHcsTopicMemo,
+        metricsHcsTopicId,
+    };
+
+    let client;
+    let metricsAccountIdObj;
+    let metricsAccountKeyObj;
+    if (metricsAccountId && metricsAccountKey) {
+        metricsAccountIdObj = AccountId.fromString(metricsAccountId);
+        metricsAccountKeyObj = PrivateKey.fromStringECDSA(metricsAccountKey);
+        client = Client.forTestnet().setOperator(metricsAccountIdObj, metricsAccountKeyObj);
+    }
+
     const logger = {
         scriptId,
         scriptCategory,
@@ -84,11 +116,17 @@ async function createLogger({
         logSection,
         logStart,
         logComplete,
+        logCompleteWithoutClose,
         logError,
+        logErrorWithoutClose,
         getStartMessage,
         getCompleteMessage,
         getErrorMessage,
         stats: loggerStatsPrev,
+        config,
+        client,
+        metricsAccountIdObj,
+        metricsAccountKeyObj,
     };
 
     function log(...strings) {
@@ -110,32 +148,61 @@ async function createLogger({
         logger.stats.lastStart = Math.max(msg.time, logger.stats.lastStart);
         logger.stats.firstStart = Math.min(msg.time, logger.stats.firstStart);
         logger.stats.countStart += 1;
-        saveLoggerStats(logger);
-        metricsTrackOnHcs(msg);
+        writeLoggerFile(logger);
+        metricsTrackOnHcs(logger, msg);
         return retVal;
     }
 
-    function logComplete(...strings) {
+    function logCompleteWithoutClose(...strings) {
+        const [retVal, msg] = logCompleteImplStart(...strings);
+        metricsTrackOnHcs(logger, msg);
+        logCompleteImplEnd(false);
+        return retVal;
+    }
+
+    async function logComplete(...strings) {
+        const [retVal, msg] = logCompleteImplStart(...strings);
+        await metricsTrackOnHcs(logger, msg);
+        logCompleteImplEnd(true);
+        return retVal;
+    }
+
+    function logCompleteImplStart(...strings) {
         const retVal = logSection(...strings);
         const msg = getCompleteMessage();
         logger.stats.lastComplete = Math.max(msg.time, logger.stats.lastComplete);
         logger.stats.firstComplete = Math.min(msg.time, logger.stats.firstComplete);
         logger.stats.countComplete += 1;
-        metricsTrackOnHcs(msg);
-        logCompleteImpl();
-        return retVal;
+        return [retVal, msg];
     }
 
-    async function logCompleteImpl() {
-        await saveLoggerStats(logger);
+    async function logCompleteImplEnd(shouldClose) {
+        await writeLoggerFile(logger);
         if (logger.scriptCategory === 'task') {
-            logMetricsSummary();
+            await logMetricsSummary();
+        }
+        if (shouldClose) {
+            logger.client?.close();
         }
     }
 
-    function logError(...strings) {
+    function logErrorWithoutClose(...strings) {
+        const [msg] = logErrorImplStart();
+        writeLoggerFile(logger);
+        metricsTrackOnHcs(logger, msg);
+        return log(...strings);
+    }
+
+    async function logError(...strings) {
+        const [msg] = logErrorImplStart();
+        await metricsTrackOnHcs(logger, msg);
+        await writeLoggerFile(logger);
+        logger.client?.close();
+        return log(...strings);
+    }
+
+    function logErrorImplStart() {
         const msg = getErrorMessage();
-        metricsTrackOnHcs(msg);
         logger.stats.lastError = Math.max(msg.time, logger.stats.lastError);
         logger.stats.firstError = Math.min(msg.time, logger.stats.firstError);
         logger.stats.countError += 1;
@@ -144,8 +211,7 @@ async function createLogger({
         } else {
             logger.stats.countErrorBeforeFirstComplete += 1;
         }
-        saveLoggerStats(logger);
-        return log(...strings);
+        return [msg];
     }
 
     function getStartMessage() {
@@ -196,8 +262,9 @@ async function readLoggerFile() {
     return (loggerFile || {});
 }
 
-async function saveLoggerStats(logger) {
+async function writeLoggerFile(logger) {
     const loggerFile = await readLoggerFile();
+    loggerFile.config = logger.config;
     loggerFile[logger.scriptId] = {
         scriptCategory: logger.scriptCategory,
         ...logger.stats,
@@ -311,6 +378,16 @@ async function logMetricsSummary() {
     });
 }
 
+function displayDuration(ms) {
+    const seconds = (ms / 1_000);
+    const minutes = Math.floor(seconds / 60);
+    let out = (seconds % 60).toFixed(1) + 's';
+    if (minutes !== 0) {
+        out = `${minutes}min ${out}`;
+    }
+    return out;
+}
+
 function blueLog(...strings) {
     return console.log(ANSI_ESCAPE_CODE_BLUE, '🔵', ...strings, HELLIP_CHAR);
 }
@@ -373,81 +450,17 @@ async function queryAccountByPrivateKey(privateKeyStr) {
     }
 }
 
-async function getMetricsConfig() {
-    // read in current metrics config
-    dotenv.config({
-        path: [DEFAULT_VALUES.mainDotEnvFilePath],
-        override: false,
-    });
-    dotenv.config({
-        path: [DEFAULT_VALUES.metricsDotEnvFilePath],
-        override: true,
-    });
-
-    // read ID, account credentials and HCS topic ID from config
-    // falling back on defaults in not present
-    const metricsId = process.env.METRICS_ID ||
-        crypto.randomBytes(16).toString('hex');
-    const metricsAccountId =
-        process.env.METRICS_ACCOUNT_ID ||
-        DEFAULT_VALUES.metricsAccountId ||
-        process.env.OPERATOR_ACCOUNT_ID;
-    const metricsAccountKey =
-        process.env.METRICS_ACCOUNT_PRIVATE_KEY ||
-        DEFAULT_VALUES.metricsAccountKey ||
-        process.env.OPERATOR_ACCOUNT_PRIVATE_KEY;
-    const metricsHcsTopicId = process.env.METRICS_HCS_TOPIC_ID ||
-        DEFAULT_VALUES.metricsHcsTopicId;
-
-    let client;
-    let metricsAccountIdObj;
-    let metricsAccountKeyObj;
-    if (metricsAccountId && metricsAccountKey) {
-        metricsAccountIdObj = AccountId.fromString(metricsAccountId);
-        metricsAccountKeyObj = PrivateKey.fromStringECDSA(metricsAccountKey);
-        client = Client.forTestnet().setOperator(metricsAccountIdObj, metricsAccountKeyObj);
-    }
-
-    return {
-        metricsId,
-        metricsAccountId,
-        metricsAccountKey,
-        metricsHcsTopicId,
-        client,
-        metricsAccountIdObj,
-        metricsAccountKeyObj,
-    };
-}
-
-async function saveMetricsConfig({
-    metricsId,
-    metricsAccountId,
-    metricsAccountKey,
-    metricsHcsTopicId,
-}) {
-    // save/ overwrite config file
-    const dotEnvFileText =
-`
-METRICS_ID=${metricsId || ''}
-METRICS_ACCOUNT_ID=${metricsAccountId || ''}
-METRICS_ACCOUNT_PRIVATE_KEY=${metricsAccountKey || ''}
-METRICS_HCS_TOPIC_ID=${metricsHcsTopicId || ''}
-`;
-    const fileName = DEFAULT_VALUES.metricsDotEnvFilePath;
-    await fs.writeFile(fileName, dotEnvFileText);
-}
-
-async function metricsTopicCreate() {
+async function metricsTopicCreate(logger) {
     const {
-        metricsId,
-        metricsAccountId,
-        metricsAccountKey,
         client,
         metricsAccountKeyObj,
-    } = await getMetricsConfig();
+    } = logger;
+    const {
+        metricsHcsTopicMemo,
+    } = logger.config;
 
     const topicCreateTx = await new TopicCreateTransaction()
-        .setTopicMemo(DEFAULT_VALUES.metricsHcsTopicMemo)
+        .setTopicMemo(metricsHcsTopicMemo)
         .freezeWith(client);
     const topicCreateTxSigned = await topicCreateTx.sign(metricsAccountKeyObj);
     const topicCreateTxSubmitted = await topicCreateTxSigned.execute(client);
@@ -455,20 +468,13 @@ async function metricsTopicCreate() {
     const metricsHcsTopicId = topicCreateTxReceipt.topicId;
     console.log('Metrics HCS topic ID:', metricsHcsTopicId.toString());
 
-    client.close();
-
     // save/ overwrite config file
-    await saveMetricsConfig({
-        metricsId,
-        metricsAccountId,
-        metricsAccountKey,
-        metricsHcsTopicId,
-    });
+    await writeLoggerFile(logger);
 }
 
 const metricsMessages = [];
 
-async function metricsTrackOnHcs({
+async function metricsTrackOnHcs(logger, {
     cat,
     v,
     action,
@@ -489,19 +495,16 @@ async function metricsTrackOnHcs({
         throw new Error('Invalid time:', time);
     }
 
-    let client;
+    const {
+        client,
+        metricsAccountKeyObj,
+    } = logger;
+    const {
+        metricsId,
+        metricsHcsTopicId,
+    } = logger.config;
 
     try {
-        const metricsConfig = await getMetricsConfig();
-        const {
-            metricsId,
-            metricsAccountId,
-            metricsAccountKey,
-            metricsHcsTopicId,
-            metricsAccountKeyObj,
-        } = metricsConfig;
-        client = metricsConfig.client;
-
         // Save the message in a queue immediately
         const metricsMessage = {
             id: metricsId,
@@ -512,13 +515,6 @@ async function metricsTrackOnHcs({
             time,
         };
         metricsMessages.push(metricsMessage);
-
-        await saveMetricsConfig({
-            metricsId,
-            metricsAccountId,
-            metricsAccountKey,
-            metricsHcsTopicId,
-        });
 
         // Submit metrics message to HCS topic
         if (client) {
@@ -539,17 +535,15 @@ async function metricsTrackOnHcs({
         // already tracked in memory, and will be submitted to HCS at a later time
         // when `client` is available.
     } catch (ex) {
-        console.error('Failed to track', action, detail);
-    }
-    if (client) {
-        client.close();
+        console.error('Failed to track', { cat, action, detail });
+        console.log(ex);
     }
 }
 
 module.exports = {
     displayDuration,
     createLogger,
-    saveLoggerStats,
+    writeLoggerFile,
     logMetricsSummary,
 
     ANSI_ESCAPE_CODE_BLUE,
@@ -559,5 +553,4 @@ module.exports = {
     queryAccountByEvmAddress,
     queryAccountByPrivateKey,
     metricsTopicCreate,
-    // metricsTrackOnHcs,
 };
