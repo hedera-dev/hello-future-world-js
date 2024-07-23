@@ -19,8 +19,8 @@ let client;
 const DEFAULT_VALUES = {
     dotEnvFilePath: path.resolve(__dirname, '../.env'),
     rpcUrl: 'http://localhost:7546/',
-    numAccounts: 1,
-    numAccountsMinimum: 1,
+    numAccounts: 3,
+    numAccountsMinimum: 3,
 };
 
 async function initDotEnvForApp() {

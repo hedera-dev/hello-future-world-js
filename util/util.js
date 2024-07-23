@@ -366,7 +366,9 @@ async function logMetricsSummary() {
         };
     });
 
-    console.log('Has completed a task:', hasCompletedFirstTask);
+    blueLog('\nSummary metrics');
+
+    console.log('\nHas completed a task:', hasCompletedFirstTask);
     console.log('First task completed ID:', firstTaskScript.scriptId);
     if (timeToHelloWorld < 0) {
         console.log('Time to first task completion:', 'Unknown, script was not used to initialise.');
@@ -374,6 +376,7 @@ async function logMetricsSummary() {
         console.log('Time to first task completion:', displayDuration(timeToHelloWorld));
     }
     console.log('Total number of task completions:', totalCountOfTaskCompletions);
+
     console.log('\nCompleted tasks:', completedTaskDurations.length);
     completedTaskDurations.forEach((info, index) => {
         console.log(`(${index + 1}) Task ID:`, info.name);
@@ -386,6 +389,12 @@ async function logMetricsSummary() {
         console.log('Time taken for attempts:', displayDuration(info.duration));
         console.log('Errors thus far:', info.errors);
     });
+
+    console.log(
+        '\nView HCS metrics on HashScan:',
+        '\n',
+        `https://hashscan.io/testnet/topic/${loggerFile.config.metricsHcsTopicId}`,
+    );
 }
 
 function displayDuration(ms) {

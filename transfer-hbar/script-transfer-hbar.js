@@ -4,7 +4,6 @@ import {
     Client,
     PrivateKey,
     AccountId,
-    AccountCreateTransaction,
     TransferTransaction,
     Hbar,
     HbarUnit,
@@ -127,6 +126,7 @@ async function scriptTransferHbar() {
     const transferTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${transferTxId}`;
     logger.log(
         'Copy and paste this URL in your browser:',
+        '\n',
         transferTxVerifyHashscanUrl,
     );
 
