@@ -36,17 +36,6 @@ function displayDuration(ms) {
     return out;
 }
 
-async function readLoggerFile() {
-    let loggerFile;
-    try {
-        const loggerFileJson  = await fs.readFile(DEFAULT_VALUES.loggerFilePath);
-        loggerFile = JSON.parse(loggerFileJson);
-    } catch (ex) {
-        // do nothing
-    }
-    return (loggerFile || {});
-}
-
 async function createLogger({
     scriptId,
     scriptCategory,
@@ -132,10 +121,14 @@ async function createLogger({
         logger.stats.lastComplete = Math.max(msg.time, logger.stats.lastComplete);
         logger.stats.firstComplete = Math.min(msg.time, logger.stats.firstComplete);
         logger.stats.countComplete += 1;
-        saveLoggerStats(logger);
         metricsTrackOnHcs(msg);
-        logMetricsSummary();
+        logCompleteImpl();
         return retVal;
+    }
+
+    async function logCompleteImpl() {
+        await saveLoggerStats(logger);
+        logMetricsSummary();
     }
 
     function logError(...strings) {
@@ -188,6 +181,17 @@ async function createLogger({
     }
 
     return logger;
+}
+
+async function readLoggerFile() {
+    let loggerFile;
+    try {
+        const loggerFileJson  = await fs.readFile(DEFAULT_VALUES.loggerFilePath);
+        loggerFile = JSON.parse(loggerFileJson);
+    } catch (ex) {
+        // do nothing
+    }
+    return (loggerFile || {});
 }
 
 async function saveLoggerStats(logger) {
