@@ -7,8 +7,10 @@ const {
     PrivateKey,
 } = require('@hashgraph/sdk');
 const {
-    metricsTrackOnHcs,
+    createLogger,
 } = require('../util/util.js');
+
+let logger;
 
 const DEFAULT_VALUES = {
     dotEnvFilePath: path.resolve(__dirname, '../.rpcrelay.env'),
@@ -16,7 +18,11 @@ const DEFAULT_VALUES = {
 };
 
 async function initDotEnvForRpcRelay() {
-    metricsTrackOnHcs('initDotEnvForRpcRelay', 'begin');
+    logger = await createLogger({
+        scriptId: 'initDotEnvForRpcRelay',
+        scriptCategory: 'setup',
+    });
+    logger.logStart('Hello Future World - Initialise RPC Relay .env file - start');
 
     // read in initial values for env variables that have been set
     dotenv.config({ path: DEFAULT_VALUES.appDotEnvFilePath });
@@ -47,8 +53,10 @@ MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com/
     const fileName = DEFAULT_VALUES.dotEnvFilePath;
     await fs.writeFile(fileName, dotEnvText);
 
-    console.log('OK, wrote .rpcrelay.env file');
-    metricsTrackOnHcs('initDotEnvForRpcRelay', 'overwrite');
+    logger.log('OK, wrote .rpcrelay.env file');
+    logger.logComplete('Hello Future World - Initialise RPC Relay .env file - complete');
 }
 
-initDotEnvForRpcRelay();
+initDotEnvForRpcRelay().catch((ex) => {
+    logger ? logger.logError(ex) : console.error(ex);
+});
