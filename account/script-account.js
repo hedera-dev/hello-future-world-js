@@ -12,20 +12,22 @@ import {
 } from '@hashgraph/sdk';
 import dotenv from 'dotenv';
 import {
-    blueLog,
     convertTransactionIdForMirrorNodeApi,
-    metricsTrackOnHcs,
+    createLogger,
 } from '../util/util.js';
 
-const hfwId = 'HFW-BASE';
-
+const logger = await createLogger({
+    scriptId: 'transferHbar',
+    scriptCategory: 'task',
+});
 let client;
 
 async function scriptAccount() {
-    metricsTrackOnHcs('scriptAccount', 'run');
+    logger.logStart('Hello Future World - Transfer Hbar - start');
 
     // Read in environment variables from `.env` file in parent directory
     dotenv.config({ path: '../.env' });
+    logger.log('Read .env file');
 
     // Initialise the operator account
     const yourName = process.env.YOUR_NAME;
@@ -37,6 +39,8 @@ async function scriptAccount() {
     }
     const operatorId = AccountId.fromString(operatorIdStr);
     const operatorKey = PrivateKey.fromStringECDSA(operatorKeyStr);
+    logger.log('Using your name as:', yourName);
+    logger.log('Using account:', operatorIdStr);
 
     // The client operator ID and key is the account that will be automatically set to pay for the transaction fees for each transaction
     client = Client.forTestnet().setOperator(operatorId, operatorKey);
@@ -47,19 +51,19 @@ async function scriptAccount() {
     // NOTE: Create new account using AccountCreateTransaction,
     // setting the initial hbar balance of 5 and an account key
     // Step (1) in the accompanying tutorial
-    blueLog('Creating, signing and submitting the account create transaction');
+    logger.logSection('Creating, signing and submitting the account create transaction');
     const accountCreateTx = await new AccountCreateTransaction({
         initialBalance: new Hbar(5),
         key: account1PrivateKey,
-        accountMemo: `Hello Future World from ${yourName}'s first account! ${hfwId}`,
+        accountMemo: `Hello Future World from ${yourName}'s first account! ${logger.scriptId}`,
     })
-        .setTransactionMemo(hfwId)
+        .setTransactionMemo(logger.scriptId)
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
 
     // Get the transaction ID of the transaction. The SDK automatically generates and assigns a transaction ID when the transaction is created
     const accountCreateTransactionId = accountCreateTx.transactionId;
-    console.log('The account create transaction ID: ',
+    logger.log('The account create transaction ID: ',
         accountCreateTransactionId.toString());
 
     // Sign the transaction with the account key that will be paying for this transaction
@@ -73,32 +77,31 @@ async function scriptAccount() {
 
     // Get the account ID
     const account1Id = accountCreateTxReceipt.accountId;
-    console.log('account1Id:', account1Id.toString());
+    logger.log('account1Id:', account1Id.toString());
 
     // Get the account balance from a consensus node
     const accountBalance = new AccountBalanceQuery()
         .setAccountId(account1Id)
         .execute(client);
     const hbarBalance = (await accountBalance).hbars;
-    console.log('The new account balance is: ', hbarBalance.toString());
-    console.log('');
+    logger.log('The new account balance is: ', hbarBalance.toString());
 
-    blueLog('Get account data from the Hedera Mirror Node');
+    logger.logSection('Get account data from the Hedera Mirror Node');
 
     // Wait for 6s for record files (blocks) to propagate to mirror nodes
     await new Promise((resolve) => setTimeout(resolve, 6_000));
 
     // Hedera Mirror Node account information request
     const accountInfoMirrorNodeApiUrl = `https://testnet.mirrornode.hedera.com/api/v1/accounts/${account1Id.toString()}?limit=1&order=asc&transactiontype=cryptotransfer&transactions=false`;
-    console.log(
-        'The account info Hedera Mirror Node API URL:\n',
-        accountInfoMirrorNodeApiUrl
+    logger.log(
+        'The account info Hedera Mirror Node API URL:',
+        '\n',
+        accountInfoMirrorNodeApiUrl,
     );
     const accountCreateFetch = await fetch(accountInfoMirrorNodeApiUrl);
     const accountCreateJson = await accountCreateFetch.json();
     const accountCreateJsonAccountMemo = accountCreateJson?.memo;
-    console.log('The account memo: ', accountCreateJsonAccountMemo);
-    console.log('');
+    logger.log('The account memo: ', accountCreateJsonAccountMemo);
 
     // TODO revisit this, determine whether necessary after writing accompanying tutorial
     // and measuring time taken to complete, etc.
@@ -116,10 +119,9 @@ async function scriptAccount() {
     // console.log('');
 
     // View your account on HashScan
-    blueLog('View the account on HashScan');
+    logger.logSection('View the account on HashScan');
     const accountVerifyHashscanUrl = `https://hashscan.io/testnet/account/${account1Id.toString()}`;
-    console.log('Paste URL in browser:', accountVerifyHashscanUrl);
-    console.log('');
+    logger.log('Paste URL in browser:', accountVerifyHashscanUrl);
 
     // TODO revisit this, determine whether necessary after writing accompanying tutorial
     // and measuring time taken to complete, etc.
@@ -137,11 +139,11 @@ async function scriptAccount() {
 
     // NOTE: Transfer HBAR using TransferTransaction
     // Step (2) in the accompanying tutorial
-    blueLog('Creating, signing, and submitting the transfer transaction');
+    logger.logSection('Creating, signing, and submitting the transfer transaction');
 
     // TODO Revisit to consider whether to use 1 debit + multiple credits
     const transferTx = await new TransferTransaction()
-        .setTransactionMemo(hfwId)
+        .setTransactionMemo(logger.scriptId)
         // Debit 5 hbars from the operator account
         .addHbarTransfer(operatorId, new Hbar(-662607015, HbarUnit.Tinybar))
         // Credit 5 hbars from the new account
@@ -151,7 +153,7 @@ async function scriptAccount() {
 
     // Get the transaction ID for the transfer transaction
     const transferTxId = transferTx.transactionId;
-    console.log('The transfer transaction ID:', transferTxId.toString());
+    logger.log('The transfer transaction ID:', transferTxId.toString());
 
     // Sign the transaction with the account that is being debited (operator account) and the transaction fee payer account (operator account)
     // Since the account that is being debited and the account that is paying for the transaction are the same only one accoun'ts signature is required
@@ -163,8 +165,9 @@ async function scriptAccount() {
     //Get the transfer transaction receipt
     const transferTxReceipt = await transferTxSubmitted.getReceipt(client);
     const transactionStatus = transferTxReceipt.status;
-    console.log(
-        'The transfer transaction status is:', transactionStatus.toString()
+    logger.log(
+        'The transfer transaction status is:',
+        transactionStatus.toString(),
     );
 
     // Get the new account balance from a consensus node
@@ -172,12 +175,11 @@ async function scriptAccount() {
         .setAccountId(account1Id)
         .execute(client);
     const newHbarBalance = (await newAccountBalance).hbars;
-    console.log('The new account balance after the transfer:', newHbarBalance.toString());
-    console.log('');
+    logger.log('The new account balance after the transfer:', newHbarBalance.toString());
 
     client.close();
 
-    blueLog('Get transfer transaction data from the Hedera Mirror Node');
+    logger.logSection('Get transfer transaction data from the Hedera Mirror Node');
 
     // Wait for 6s for record files (blocks) to propagate to mirror nodes
     await new Promise((resolve) => setTimeout(resolve, 6_000));
@@ -185,9 +187,10 @@ async function scriptAccount() {
     // The transfer transaction mirror node API request
     const transferTxIdMirrorNodeFormat = convertTransactionIdForMirrorNodeApi(transferTxId);
     const transferTxVerifyMirrorNodeApiUrl = `https://testnet.mirrornode.hedera.com/api/v1/transactions/${transferTxIdMirrorNodeFormat}?nonce=0`;
-    console.log(
-        'The transfer transaction Hedera Mirror Node API URL:\n',
-        transferTxVerifyMirrorNodeApiUrl
+    logger.log(
+        'The transfer transaction Hedera Mirror Node API URL:',
+        '\n',
+        transferTxVerifyMirrorNodeApiUrl,
     );
 
     // The transfer transaction assessed transaction fee, debits, and credits in HBAR
@@ -197,28 +200,23 @@ async function scriptAccount() {
     const transferJsonAccountTransfersFinal2Amounts = transferJsonAccountTransfers
         ?.slice(-2)
         ?.map((obj) => Hbar.from(obj.amount, HbarUnit.Tinybar).toString(HbarUnit.Hbar));
-    console.log(
+    logger.log(
         'The debit and credit amounts of the transfer transaction:\n',
         transferJsonAccountTransfersFinal2Amounts
       );
-    console.log('');
 
     // View the transaction in HashScan
-    blueLog('View the transfer transaction transaction in HashScan');
+    logger.logSection('View the transfer transaction transaction in HashScan');
     const transferTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${transferTxId}`;
-    console.log(
+    logger.log(
         'Copy and paste this URL in your browser:',
-        transferTxVerifyHashscanUrl
+        transferTxVerifyHashscanUrl,
     );
-    console.log('');
 
-    metricsTrackOnHcs('scriptAccount', 'complete');
+    logger.logComplete('Hello Future World - Transfer Hbar - complete');
 }
 
 scriptAccount().catch((ex) => {
-    if (client) {
-        client.close();
-    }
-    console.error(ex);
-    metricsTrackOnHcs('scriptAccount', 'error');
+    client && client.close();
+    logger ? logger.logError(ex) : console.error(ex);
 });
