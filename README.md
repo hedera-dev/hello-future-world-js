@@ -58,6 +58,14 @@ Note that each sequence is intended to be completed in **under 10 minutes** when
 
 ### Setup script
 
+What you will accomplish:
+
+1. Answer interactive prompts in a terminal to construct a `.env` file
+1. Generate accounts using a BIP-39 seed phrase (optional)
+1. Fund one of those accounts using the Hedera Testnet Faucet (optional)
+
+Steps:
+
 1. Enter name or nickname
    - Input any value, can be fictional/ anonymous/ etc
 1. Enter private key
@@ -92,30 +100,88 @@ Note that each sequence is intended to be completed in **under 10 minutes** when
    - Input `y` to update the `.env` file
 1. Open the `.env` file and check that its contents have been updated
 
-### Create account
+### Transfer HBAR
 
 Demonstrates: Use of the Hedera network, at a base level.
 
+<!--
 [Go to accompanying tutorial](#TODO_LINK). (WIP)
+-->
+
+What you will accomplish:
+
+1. Initialise `Client` using the Hedera SDK,
+   by reading in credentials from the `.env` file generated earlier.
+1. Send a `TransferTransaction` using the Hedera SDK.
+   - Note that in Hedera, you can have debits and credits from multiple accounts,
+     as long as their total tallies, and all debiting accounts sign the transaction.
+     This is unlike in the EVM, where you would need a smart contract
+     or some other intermediary to accomplish the same task.
+   - `.sign`, `.execute`, and `.getReceipt` are used to complete transaction.
+1. Send an `AccountBalanceQuery` using the Hedera SDK.
+   - This obtains the fresh balance from one of the recipient accounts.
+1. Send an HTTP request to a Mirror Node API to query the transaction
+   - The response is parsed to obtain the amounts transferred.
+1. View the transfer transaction page in HashScan (the network explorer)
 
 Steps:
 
-1. `AccountCreateTransaction`
-1. `TransferTransaction`
-1. Mirror Node API for programmatic verification
-1. Hashscan for manual verification
+1. In the code editor, Open the file `transfer-hbar/script-transfer-hbar.js`.
+1. In the terminal, run these commands:
+   - `cd transfer-hbar`
+   - `./script-transfer-hbar.js`
+1. View the summary statistics (optional)
+   - The "time to first task completion" displays how long it took
+     between starting up the project (the setup script)
+     through to completing the first task.
+     Note that this does not include the time taken to set up the repo manually (variable),
+     or for Gitpod to spin up (up to 10 seconds).
+   - The "time taken to complete" displays how long it took
+     for this particular script to run.
+   - Open the HCS topic and check logs which match you anonymised key.
+     Note that the anonymised key is simply a randomly generated hexadecimal string.
 
 ### Fungible Token using HTS
 
 Demonstrates: Use of the Hedera Token Service (HTS).
 
+<!--
 [Go to accompanying tutorial](#TODO_LINK). (WIP)
+-->
+
+What you will accomplish:
+
+1. Initialise `Client` using the Hedera SDK,
+   by reading in credentials from the `.env` file generated earlier.
+1. Send a `TokenCreateTransaction` using the Hedera SDK.
+   - Note that in Hedera, tokens can be created with out using Solidity or smart contracts.
+     Instead, you can create HTS tokens using only SDK methods.
+     These have equivalent functionality to ERC20 or ERC721 tokens,
+     but can be created with much less effort.
+   - `.setTokenType` is sued to specify that this should be a fungible token.
+   - `.setTokenName`, `.setTokenSymbol`, `.setDecimals`, and `.setInitialSupply`
+     are used to configure the token.
+   - `.sign`, `.execute`, and `.getReceipt` are used to complete transaction.
+1. Send an HTTP request to a Mirror Node API to query the transaction
+   - The response is parsed to obtain the name and total supply of the token.
+1. View the token page in HashScan (the network explorer)
 
 Steps:
 
-1. `TokenCreateTransaction`
-1. Mirror Node API for programmatic verification
-1. Hashscan for manual verification
+1. In the code editor, Open the file `hts-ft/script-hts-ft.js`.
+1. In the terminal, run these commands:
+   - `cd hts-ft`
+   - `./script-hts-ft.js`
+1. View the summary statistics (optional)
+   - The "time to first task completion" displays how long it took
+     between starting up the project (the setup script)
+     through to completing the first task.
+     Note that this does not include the time taken to set up the repo manually (variable),
+     or for Gitpod to spin up (up to 10 seconds).
+   - The "time taken to complete" displays how long it took
+     for this particular script to run.
+   - Open the HCS topic and check logs which match you anonymised key.
+     Note that the anonymised key is simply a randomly generated hexadecimal string.
 
 ### Topic using HCS
 
