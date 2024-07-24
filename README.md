@@ -158,7 +158,7 @@ What you will accomplish:
      Instead, you can create HTS tokens using only SDK methods.
      These have equivalent functionality to ERC20 or ERC721 tokens,
      but can be created with much less effort.
-   - `.setTokenType` is sued to specify that this should be a fungible token.
+   - `.setTokenType` is used to specify that this should be a fungible token.
    - `.setTokenName`, `.setTokenSymbol`, `.setDecimals`, and `.setInitialSupply`
      are used to configure the token.
    - `.sign`, `.execute`, and `.getReceipt` are used to complete transaction.
@@ -187,9 +187,43 @@ Steps:
 
 Demonstrates: Use of the Hedera Consensus Service (HCS).
 
+<!--
 [Go to accompanying tutorial](#TODO_LINK). (WIP)
+-->
+
+What you will accomplish:
+
+1. Initialise `Client` using the Hedera SDK,
+   by reading in credentials from the `.env` file generated earlier.
+1. Send a `TopicCreateTransaction` using the Hedera SDK.
+   - This registers a new topic, which may be thought of as a
+     [pub-sub messaging service](https://dev.to/willvelida/the-publisher-subscriber-pattern-pubsub-messaging-10in).
+   - `.setTransactionMemo` and `.setTopicMemo` are used to configure the topic.
+   - `.sign`, `.execute`, and `.getReceipt` are used to complete transaction.
+1. Send a `TopicMessageSubmitTransaction` using the Hedera SDK.
+   - This adds a message to the freshly created topic.
+   - `.setTransactionMemo`, `.setTopicId`, and `.setMessage` are used to configure the message.
+   - `.sign`, `.execute`, and `.getReceipt` are used to complete transaction.
+1. Send an HTTP request to a Mirror Node API to query the transaction
+   - The response is parsed to obtain the messages in the topic.
+1. View the topic page in HashScan (the network explorer)
 
 Steps:
+
+1. In the code editor, Open the file `hcs-topic/script-hcs-topic.js`.
+1. In the terminal, run these commands:
+   - `cd hcs-topic`
+   - `./script-hcs-topic.js`
+1. View the summary statistics (optional)
+   - The "time to first task completion" displays how long it took
+     between starting up the project (the setup script)
+     through to completing the first task.
+     Note that this does not include the time taken to set up the repo manually (variable),
+     or for Gitpod to spin up (up to 10 seconds).
+   - The "time taken to complete" displays how long it took
+     for this particular script to run.
+   - Open the HCS topic and check logs which match you anonymised key.
+     Note that the anonymised key is simply a randomly generated hexadecimal string.
 
 1. `TopicCreateTransaction`
 1. `TopicMessageSubmitTransaction`
