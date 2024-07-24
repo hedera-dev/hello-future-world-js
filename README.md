@@ -225,26 +225,61 @@ Steps:
    - Open the HCS topic and check logs which match you anonymised key.
      Note that the anonymised key is simply a randomly generated hexadecimal string.
 
-1. `TopicCreateTransaction`
-1. `TopicMessageSubmitTransaction`
-1. Hashscan for manual verification
-1. Mirror Node API for programmatic verification
-
 ### Smart Contract using HSCS
 
 Demonstrates: Use of the Hedera Smart Contract Service (HSCS).
 
+<!--
 [Go to accompanying tutorial](#TODO_LINK). (WIP)
+-->
+
+What you will accomplish:
+
+1. Observe that the RPC Relay has been set up and running in the background.
+1. Initialise `Wallet` and `RpcConnection` using EthersJs,
+   by reading in credentials from the `.env` file generated earlier.
+1. Send an EVM smart contract deployment transaction using `ContractFactory` via EthersJs
+   - The `*.abi` and `*.bin` files output by the Solidity compiler (`solc`) are used as inputs.
+   - `.deploy` and `.wait` are used to complete the transaction.
+1. View the smart contract in HashScan (the network explorer)
+1. Invoke the `introduce` function on the smart contract using `.functions.introduce` via EthersJs.
+   - `.wait` is used to complete the transaction.
+   - This transaction updates the state of (data stored in) the smart contract.
+1. Invoke the `greet` function on the smart contract using `.functions.greet` via EthersJs.
+   - There is no transaction involved here,
+     as this accesses the state of (data stored in) the smart contract,
+     without updating it.
 
 Steps:
 
-1. Write smart contract code in Solidity
-1. Compile smart contract using `solc`
-1. Smoke test JSON-RPC endpoint
-1. Deploy smart contract
-1. Invoke smart contract transaction
-1. Invoke smart contract query
-1. Hashscan for manual verification
+1. In the code editor, open the files
+   `hscs-smart-contract/script-hscs-smart-contract.js` and
+   `hscs-smart-contract/my_contract.sol`.
+1. In the terminal, run these commands:
+   - `cd hscs-smart-contract`
+   - `npm install`
+   - `npx solc@0.8.17 --abi --bin my_contract.sol`
+   - `./script-hscs-smart-contract.js`
+1. View the summary statistics (optional)
+   - The "time to first task completion" displays how long it took
+     between starting up the project (the setup script)
+     through to completing the first task.
+     Note that this does not include the time taken to set up the repo manually (variable),
+     or for Gitpod to spin up (up to 10 seconds).
+   - The "time taken to complete" displays how long it took
+     for this particular script to run.
+   - Open the HCS topic in HashScan and check logs which match you anonymised key.
+     Note that the anonymised key is simply a randomly generated hexadecimal string.
+
+### Tear down
+
+1. If you ran this via Gitpod, be sure to "stop workspace".
+   - You may do so via the menu within the browser-based IDE.
+   - Alternatively, visit [gitpod.io/workspaces](https://gitpod.io/workspaces)
+     to see a list of all workspaces
+   - Note that Gitpod has a limited number of hours on their free tier,
+     and you pay for hours on their paid tiers,
+     so best to avoid an idling workspace.
 
 ## Author
 
