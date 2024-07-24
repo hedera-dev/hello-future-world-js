@@ -56,6 +56,42 @@ The following sections outline what each sequence will cover.
 Each one represents the bare minimum required to use various parts of Hedera technology.
 Note that each sequence is intended to be completed in **under 10 minutes** when run via Gitpod.
 
+### Setup script
+
+1. Enter name or nickname
+   - Input any value, can be fictional/ anonymous/ etc
+1. Enter private key
+   - Option 1: Input `none`.
+     This will mean that an account generated from a seed phrase will be used (later).
+   - Option 2: Input any ECDSA sec256k1 private key.
+     You may obtain this from [portal.hedera.com/dashboard](https://portal.hedera.com/dashboard).
+1. Enter seed phrase
+   - Option 1: Input nothing.
+     This will generate a new seed BIP-39 phrase at random.
+   - Option 2: Input any [BIP-39](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) compliant seed phrase
+     You may generate one using any tool that supports BIP-39.
+     If you would like to do this in the browser, you may use [iancoleman.io/bip39](https://iancoleman.io/bip39/)
+1. Enter number of accounts
+   - Input any whole number greater than or equal to `3`.
+     This tutorial requires at least 3 to be generated from the BIP-39 seed phrase.
+1. Please ensure that you have funded
+   - To do so, copy the EVM address in the terminal output (starts with `0x`)
+   - Then visit [faucet.hedera.com](https://faucet.hedera.com/)
+   - Paste the EVM address into the "Enter Wallet Address" text field
+   - Press the "Receive…" button
+   - Pass the reCaptcha ("I'm not a robot")
+   - Press the "Confirm transaction" button
+   - Wait till you see the "Transaction successful" model dialog
+   - Switch back to the script
+   - There is no input required here, simply hit "Enter" or "Return" after funding the account
+1. Enter JSON-RPC URL
+   - Input nothing to accept the default value suggested by the script.
+     - If running the script on your own computer, this value defaults to `https://localhost:7546/`
+     - If running the script on Gitpod, this value defaults to something that matches the patterns`https://7546-*.gitpod.io/`
+1. Overwrite?
+   - Input `y` to update the `.env` file
+1. Open the `.env` file and check that its contents have been updated
+
 ### Create account
 
 Demonstrates: Use of the Hedera network, at a base level.
