@@ -1,5 +1,7 @@
 const crypto = require('node:crypto');
 const fs = require('fs/promises');
+const readline = require('node:readline/promises');
+const { stdin, stdout } = require('node:process');
 const path = require('path');
 const dotenv = require('dotenv');
 const {
@@ -40,7 +42,7 @@ async function createLogger({
     const gitRefsHeadMain = await fs.readFile(DEFAULT_VALUES.gitRefsHeadMainFilePath);
     const gitCommitHash = gitRefsHeadMain.toString().trim().substring(0, 8);
     const version = `${packageJson.version}-${gitCommitHash}`;
-    console.log({ version });
+    console.log(`${scriptCategory} ${scriptId} ${version}`);
 
     // read previous stats collected for this script, if any
     const loggerFile = await readLoggerFile();
@@ -67,11 +69,13 @@ async function createLogger({
         lastMsg: '',
         log,
         logSection,
+        logSectionWithWaitPrompt,
         logStart,
         logComplete,
         logCompleteWithoutClose,
         logError,
         logErrorWithoutClose,
+        logSummary,
         gracefullyCloseClient,
         getStartMessage,
         getCompleteMessage,
@@ -92,6 +96,18 @@ async function createLogger({
         logger.lastMsg = ([...strings])[0];
         console.log('');
         return blueLog(...strings);
+    }
+
+    async function logSectionWithWaitPrompt(...strings) {
+        const retVal = logSection(...strings);
+        // readline is used to simply prompt user to hit enter
+        const rlPrompt = readline.createInterface({
+            input: stdin,
+            output: stdout,
+        });
+        await rlPrompt.question('(Hit the "return" key when ready to proceed)');
+        rlPrompt.close();
+        return retVal;
     }
 
     function logStart(...strings) {
@@ -166,6 +182,17 @@ async function createLogger({
         return [msg];
     }
 
+    async function logSummary(summaryObj) {
+        const msg = {
+            cat: 'summary',
+            v: logger.version,
+            action: scriptId,
+            detail: summaryObj,
+            time: Date.now(),
+        };
+        await metricsTrackOnHcs(logger, msg);
+    }
+
     async function gracefullyCloseClient() {
         await (new Promise((resolve) => { setTimeout(resolve, 100) }));
         try {
@@ -225,20 +252,22 @@ async function initLoggerConfig(logger) {
 
     // read ID, account credentials and HCS topic ID from config
     // falling back on defaults if not present
-    const metricsId = loggerFile?.config?.['metricsId'] ||
+    const metricsId = loggerFile?.config?.metricsId ||
         crypto.randomBytes(16).toString('hex');
     const metricsAccountId =
-        loggerFile?.config?.['metricsAccountId'] ||
+        loggerFile?.config?.metricsAccountId ||
         tempEnv.OPERATOR_ACCOUNT_ID ||
         '';
     const metricsAccountKey =
-        loggerFile?.config?.['metricsAccountKey'] ||
+        loggerFile?.config?.metricsAccountKey ||
         tempEnv.OPERATOR_ACCOUNT_PRIVATE_KEY ||
         '';
     const metricsHcsTopicMemo =
-        loggerFile?.config?.['metricsHcsTopicMemo'] || '';
+        loggerFile?.config?.metricsHcsTopicMemo || '';
     const metricsHcsTopicId =
-        loggerFile?.config?.['metricsHcsTopicId'] || '';
+        loggerFile?.config?.metricsHcsTopicId || '';
+    const metricsHcsDisabled =
+        loggerFile?.config?.metricsHcsDisabled || false;
 
     if (!metricsHcsTopicMemo ||
         !metricsHcsTopicId
@@ -253,12 +282,13 @@ async function initLoggerConfig(logger) {
         metricsAccountKey,
         metricsHcsTopicMemo,
         metricsHcsTopicId,
+        metricsHcsDisabled,
     };
 
     let client;
     let metricsAccountIdObj;
     let metricsAccountKeyObj;
-    if (metricsAccountId && metricsAccountKey) {
+    if (!metricsHcsDisabled && metricsAccountId && metricsAccountKey) {
         metricsAccountIdObj = AccountId.fromString(metricsAccountId);
         metricsAccountKeyObj = PrivateKey.fromStringECDSA(metricsAccountKey);
         client = Client.forTestnet().setOperator(metricsAccountIdObj, metricsAccountKeyObj);
@@ -300,6 +330,7 @@ async function logMetricsSummary() {
     // find first task script
     let firstSetupScript;
     let firstTaskScript;
+    let lastTaskScript;
     const completedTasks = [];
     const incompleteTasks = [];
     Object.keys(loggerFile).forEach((scriptId) => {
@@ -307,6 +338,7 @@ async function logMetricsSummary() {
         const {
             scriptCategory,
             firstStart,
+            lastComplete,
             countComplete,
         } = scriptStats;
         scriptStats.scriptId = scriptId;
@@ -319,21 +351,22 @@ async function logMetricsSummary() {
                     )) {
                     firstSetupScript = scriptStats;
                 }
-                break;
+            break;
             case 'task':
-                if (!firstTaskScript ||
-                    (
-                        firstStart < firstTaskScript.firstStart &&
-                        countComplete > 0
-                    )) {
-                    firstTaskScript = scriptStats;
-                }
                 if (countComplete > 0) {
                     completedTasks.push(scriptStats);
+                    if (!firstTaskScript ||
+                        firstStart < firstTaskScript.firstStart) {
+                        firstTaskScript = scriptStats;
+                    }
+                    if (!lastTaskScript ||
+                        lastComplete > lastTaskScript.lastComplete) {
+                        lastTaskScript = scriptStats;
+                    }
                 } else {
                     incompleteTasks.push(scriptStats);
                 }
-                break;
+            break;
         }
     });
 
@@ -342,6 +375,9 @@ async function logMetricsSummary() {
     const hasCompletedFirstTask = !!(firstSetupScript && firstTaskScript);
     const timeToHelloWorld = hasCompletedFirstTask ?
         firstTaskScript.firstComplete - firstSetupScript.firstStart :
+        0;
+    const timeToFullCompletion = hasCompletedFirstTask ?
+        lastTaskScript.lastComplete - firstSetupScript.firstStart :
         0;
 
     // Timestamp difference between 1st `start` in a task to 1st `complete` in the same task
@@ -375,14 +411,24 @@ async function logMetricsSummary() {
         };
     });
 
-    blueLog('\nSummary metrics');
+    console.log();
+    blueLog('Summary metrics');
 
     console.log('\nHas completed a task:', hasCompletedFirstTask);
-    console.log('First task completed ID:', firstTaskScript.scriptId);
-    if (timeToHelloWorld < 0) {
-        console.log('Time to first task completion:', 'Unknown, script was not used to initialise.');
+    if (hasCompletedFirstTask) {
+        console.log('First task completed ID:', firstTaskScript.scriptId);
+    } else {
+        console.log('First task completed ID:', 'Not applicable');
+    }
+    if (!hasCompletedFirstTask || timeToHelloWorld < 0) {
+        console.log('Time to first task completion:', 'Not applicable');
     } else {
         console.log('Time to first task completion:', displayDuration(timeToHelloWorld));
+    }
+    if (!hasCompletedFirstTask || timeToFullCompletion < 0) {
+        console.log('Time to all tasks completion:', 'Not applicable');
+    } else {
+        console.log('Time to all tasks completion:', displayDuration(timeToFullCompletion));
     }
     console.log('Total number of task completions:', totalCountOfTaskCompletions);
 
@@ -406,6 +452,14 @@ async function logMetricsSummary() {
         `\nUsing the anonymised key: ${loggerFile.config.metricsId}`,
 
     );
+
+    return {
+        timeToHelloWorld,
+        timeToCompleteAll: timeToFullCompletion,
+        totalCompletionsCount: totalCountOfTaskCompletions,
+        completedTasks: completedTaskDurations,
+        attemptedTasks: incompleteAttemptedTaskDurations,
+    };
 }
 
 function displayDuration(ms) {
@@ -514,11 +568,11 @@ async function metricsTrackOnHcs(logger, {
     if (typeof cat !== 'string' ||
         typeof v !== 'string' ||
         typeof action !== 'string' ||
-        typeof detail !== 'string' ||
+        (typeof detail !== 'string' && typeof detail !== 'object') ||
         typeof time !== 'number') {
         throw new Error('Missing params');
     }
-    if (['start', 'complete', 'error'].indexOf(cat) < 0) {
+    if (['start', 'complete', 'error', 'summary'].indexOf(cat) < 0) {
         throw new Error('Invalid category:', cat);
     }
     if (isNaN(time) || time < 1) {
@@ -537,6 +591,7 @@ async function metricsTrackOnHcs(logger, {
     const {
         metricsId,
         metricsHcsTopicId,
+        metricsHcsDisabled,
     } = logger.config;
 
     try {
@@ -552,7 +607,7 @@ async function metricsTrackOnHcs(logger, {
         metricsMessages.push(metricsMessage);
 
         // Submit metrics message to HCS topic
-        if (client) {
+        if (!metricsHcsDisabled && client) {
             do {
                 const nextMetricsMessage = metricsMessages.shift();
                 // Track directly on HCS
