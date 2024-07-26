@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 contract MyContract {
-    string public constant hfwId = 'HFW-HSCS';
+    string public constant scriptId = 'HFWV2_hscsSC';
 
     mapping(address => string) public names;
 

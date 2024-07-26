@@ -281,6 +281,14 @@ Steps:
      and you pay for hours on their paid tiers,
      so best to avoid an idling workspace.
 
+## TODOs
+
+- [x] npm install for HSCS automate
+- [x] for hscs add solc@0.8.17 as dependency
+- [x] make log outputs consistent in the HSCS output
+- [x] make order of hashscan URL and then mirror node API check consistent across all 4
+- [x] solidity file in HSCS HW - update the constant both var name and var value
+
 ## Author
 
 [Brendan Graetz](https://blog.bguiz.com/)

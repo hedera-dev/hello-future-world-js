@@ -53,7 +53,8 @@ async function scriptTransferHbar() {
 
     // NOTE: Transfer HBAR using TransferTransaction
     // Step (1) in the accompanying tutorial
-    logger.logSection('Creating, signing, and submitting the transfer transaction');
+    await logger.logSectionWithWaitPrompt(
+        'Creating, signing, and submitting the transfer transaction');
 
     const transferTx = await new TransferTransaction()
         .setTransactionMemo(logger.scriptId)
@@ -95,7 +96,16 @@ async function scriptTransferHbar() {
 
     client.close();
 
-    logger.logSection('Get transfer transaction data from the Hedera Mirror Node');
+    // View the transaction in HashScan
+    await logger.logSectionWithWaitPrompt('View the transfer transaction transaction in HashScan');
+    const transferTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${transferTxId}`;
+    logger.log(
+        'Copy and paste this URL in your browser:',
+        '\n',
+        transferTxVerifyHashscanUrl,
+    );
+
+    await logger.logSectionWithWaitPrompt('Get transfer transaction data from the Hedera Mirror Node');
 
     // Wait for 6s for record files (blocks) to propagate to mirror nodes
     await new Promise((resolve) => setTimeout(resolve, 6_000));
@@ -120,15 +130,6 @@ async function scriptTransferHbar() {
         'The debit and credit amounts of the transfer transaction:\n',
         transferJsonAccountTransfersFinalAmounts
       );
-
-    // View the transaction in HashScan
-    logger.logSection('View the transfer transaction transaction in HashScan');
-    const transferTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${transferTxId}`;
-    logger.log(
-        'Copy and paste this URL in your browser:',
-        '\n',
-        transferTxVerifyHashscanUrl,
-    );
 
     logger.logComplete('Hello Future World - Transfer Hbar - complete');
 }

@@ -32,27 +32,23 @@ async function scriptHscsSmartContract() {
         throw new Error('Must set YOUR_NAME, OPERATOR_ACCOUNT_ID, OPERATOR_ACCOUNT_PRIVATE_KEY, and RPC_URL environment variables');
     }
 
-    // initialise operator account
     logger.logSection('Initialising operator account');
     const rpcProvider = new JsonRpcProvider(rpcUrl);
     const operatorWallet = new Wallet(operatorKeyStr, rpcProvider);
     const operatorAddress = operatorWallet.address;
-    const operatorAccountHashscanUrl = `https://hashscan.io/testnet/account/${operatorAddress}`;
-    logger.log('Operator account Hashscan URL', operatorAccountHashscanUrl);
+    logger.log('Operator account initialised:', operatorAddress);
 
     // Compile smart contract
-    logger.logSection('Reading compiled smart contract artefacts');
+    await logger.logSectionWithWaitPrompt('Reading compiled smart contract artefacts');
     const abi = await fs.readFile(`${solidityFileName}.abi`, { encoding: 'utf8' });
     const evmBytecode = await fs.readFile(`${solidityFileName}.bin`, { encoding: 'utf8' });
     logger.log('Compiled smart contract ABI:', abi.substring(0, 32), HELLIP_CHAR);
     logger.log('Compiled smart contract EVM bytecode:', evmBytecode.substring(0, 32), HELLIP_CHAR);
 
-    // TODO sanity check to test if RPC endpoint is functional/ accessible
-
     // Deploy smart contract
     // NOTE: Prepare smart contract for deployment
     // Step (2) in the accompanying tutorial
-    logger.logSection('Deploying smart contract');
+    await logger.logSectionWithWaitPrompt('Deploying smart contract');
     const myContractFactory = new ContractFactory(abi, evmBytecode, operatorWallet);
     const myContract = await myContractFactory.deploy();
     await myContract.deployTransaction.wait();
@@ -64,7 +60,7 @@ async function scriptHscsSmartContract() {
     // Write data to smart contract
     // NOTE: Invoke a smart contract transaction
     // Step (3) in the accompanying tutorial
-    logger.logSection('Write data to smart contract');
+    await logger.logSectionWithWaitPrompt('Write data to smart contract');
     const scWriteTxRequest = await myContract.functions.introduce(`${yourName} - ${logger.scriptId}`);
     const scWriteTxReceipt = await scWriteTxRequest.wait();
     const scWriteTxHash = scWriteTxReceipt.transactionHash;
@@ -75,9 +71,9 @@ async function scriptHscsSmartContract() {
     // Read data from smart contract
     // NOTE: Invoke a smart contract query
     // Step (4) in the accompanying tutorial
-    logger.logSection('Read data from smart contract');
+    await logger.logSectionWithWaitPrompt('Read data from smart contract');
     const [scReadQueryResult] = await myContract.functions.greet();
-    logger.log('Smart contract read query result', scReadQueryResult);
+    logger.log('Smart contract read query result:', scReadQueryResult);
 
     logger.logComplete('Hello Future World - HSCS smart contract - complete');
 }

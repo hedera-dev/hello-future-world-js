@@ -40,7 +40,7 @@ async function scriptHtsFungibleToken() {
 
     // NOTE: Create a HTS token
     // Step (1) in the accompanying tutorial
-    logger.logSection('Creating new HTS token');
+    await logger.logSectionWithWaitPrompt('Creating new HTS token');
     const tokenCreateTx = await new TokenCreateTransaction()
         .setTransactionMemo(logger.scriptId)
         .setTokenMemo(`${logger.scriptId} token by ${yourName}`)
@@ -83,7 +83,7 @@ async function scriptHtsFungibleToken() {
     // This is a manual step, the code below only outputs the URL to visit
 
     // View your token on HashScan
-    logger.logSection('View the token on HashScan');
+    await logger.logSectionWithWaitPrompt('View the token on HashScan');
     const tokenVerifyHashscanUrl = `https://hashscan.io/testnet/token/${tokenId.toString()}`;
     logger.log('Paste URL in browser:', tokenVerifyHashscanUrl);
 
@@ -92,7 +92,7 @@ async function scriptHtsFungibleToken() {
 
     // NOTE: Verify token using Mirror Node API
     // Step (3) in the accompanying tutorial
-    logger.logSection('Get token data from the Hedera Mirror Node');
+    await logger.logSectionWithWaitPrompt('Get token data from the Hedera Mirror Node');
     const tokenVerifyMirrorNodeApiUrl =
         `https://testnet.mirrornode.hedera.com/api/v1/tokens/${tokenId.toString()}`;
     logger.log(

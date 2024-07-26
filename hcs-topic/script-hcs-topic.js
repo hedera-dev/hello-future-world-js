@@ -40,7 +40,7 @@ async function scriptHcsTopic() {
 
     // NOTE: Create a HCS topic
     // Step (1) in the accompanying tutorial
-    logger.logSection('Creating new HCS topic');
+    await logger.logSectionWithWaitPrompt('Creating new HCS topic');
     const topicCreateTx = await new TopicCreateTransaction()
         .setTransactionMemo(logger.scriptId)
         .setTopicMemo(`HFW-HCS topic by ${yourName}`)
@@ -100,7 +100,7 @@ async function scriptHcsTopic() {
     // This is a manual step, the code below only outputs the URL to visit
 
     // View your topic on HashScan
-    logger.logSection('View the topic on HashScan');
+    await logger.logSectionWithWaitPrompt('View the topic on HashScan');
     const topicVerifyHashscanUrl = `https://hashscan.io/testnet/topic/${topicId.toString()}`;
     logger.log('Paste URL in browser:', topicVerifyHashscanUrl);
 
@@ -109,7 +109,7 @@ async function scriptHcsTopic() {
 
     // NOTE: Verify topic using Mirror Node API
     // Step (4) in the accompanying tutorial
-    logger.logSection('Get topic data from the Hedera Mirror Node');
+    await logger.logSectionWithWaitPrompt('Get topic data from the Hedera Mirror Node');
     const topicVerifyMirrorNodeApiUrl =
         `https://testnet.mirrornode.hedera.com/api/v1/topics/${topicId.toString()}/messages?encoding=base64&limit=5&order=asc&sequencenumber=1`;
     logger.log(
