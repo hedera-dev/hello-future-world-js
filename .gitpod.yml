@@ -2,15 +2,19 @@
 # To run on gitpod open https://gitpod.io/?autostart=true&editor=code&workspaceClass=g1-standard# followed by the github URL of your project
 # e.g. https://gitpod.io/?autostart=true&editor=code&workspaceClass=g1-standard#https://github.com/hedera-dev/hello-future-world-js
 tasks:
-  - name: "rpcrelay_pull"
+  - name: "get_dependencies"
     init: |
-      bash ./init/03-rpcrelay-pull.sh
+      bash ./init/03-get-dependencies.sh
+      gp sync-done get_dependencies
+      exit
   - name: "rpcrelay_run"
     init: |
+      gp sync-await get_dependencies
       gp sync-await main
       bash ./init/04-rpcrelay-run.sh
   - name: "main"
     init: |
+      gp sync-await get_dependencies_base
       (
         set -e
         export RPC_URL=$( gp url 7546 )

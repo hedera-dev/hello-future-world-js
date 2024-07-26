@@ -2,10 +2,16 @@
 
 DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# install
+# install main dependencies
 cd ${DIR}/..
 npm install
 
+if command -v "gp" &> /dev/null
+then
+  gp sync-done get_dependencies_base
+fi
+
+# install additional dependencies
 cd ${DIR}/../hscs-smart-contract
 npm install
 
