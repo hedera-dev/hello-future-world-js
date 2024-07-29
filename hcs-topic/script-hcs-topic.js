@@ -43,7 +43,6 @@ async function scriptHcsTopic() {
     await logger.logSectionWithWaitPrompt('Creating new HCS topic');
     const topicCreateTx = await new TopicCreateTransaction()
         //Set the transaction memo with the hellow future world ID
-        //Set the topic memo
         .setTransactionMemo(logger.scriptId)
         .setTopicMemo(`HFW-HCS topic by ${yourName}`)
         // Freeze the transaction to prepare for signing
