@@ -9,19 +9,21 @@ import {
 } from '@hashgraph/sdk';
 import dotenv from 'dotenv';
 import {
-    blueLog,
-    metricsTrackOnHcs,
+    createLogger,
 } from '../util/util.js';
 
-const hfwId = 'HFW-HCS';
-
+const logger = await createLogger({
+    scriptId: 'hcsTopic',
+    scriptCategory: 'task',
+});
 let client;
 
 async function scriptHcsTopic() {
-    metricsTrackOnHcs('scriptHcsTopic', 'run');
+    logger.logStart('Hello Future World - HCS Topic - start');
 
     // Read in environment variables from `.env` file in parent directory
     dotenv.config({ path: '../.env' });
+    logger.log('Read .env file');
 
     // Initialise the operator account
     const yourName = process.env.YOUR_NAME;
@@ -33,14 +35,16 @@ async function scriptHcsTopic() {
     const operatorId = AccountId.fromString(operatorIdStr);
     const operatorKey = PrivateKey.fromStringECDSA(operatorKeyStr);
     client = Client.forTestnet().setOperator(operatorId, operatorKey);
+    logger.log('Using your name as:', yourName);
+    logger.log('Using account:', operatorIdStr);
 
     // NOTE: Create a Hedera Consensus Service topic
     // Step (1) in the accompanying tutorial
-    blueLog('Creating new HCS topic');
+    await logger.logSectionWithWaitPrompt('Creating new HCS topic');
     const topicCreateTx = await new TopicCreateTransaction()
         //Set the transaction memo with the hellow future world ID
-        .setTransactionMemo(hfwId)
         //Set the topic memo
+        .setTransactionMemo(logger.scriptId)
         .setTopicMemo(`HFW-HCS topic by ${yourName}`)
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
@@ -48,7 +52,7 @@ async function scriptHcsTopic() {
     // Get the transaction ID of the transaction.
     // The SDK automatically generates and assigns a transaction ID when the transaction is created
     const topicCreateTxId = topicCreateTx.transactionId;
-    console.log('The topic create transaction ID: ',
+    logger.log('The topic create transaction ID: ',
         topicCreateTxId.toString());
 
     // Sign the transaction with the account key that will be paying for this transaction
@@ -62,14 +66,13 @@ async function scriptHcsTopic() {
 
     // Get the topic ID
     const topicId = topicCreateTxReceipt.topicId;
-    console.log('topicId:', topicId.toString());
+    logger.log('topicId:', topicId.toString());
 
     // NOTE: Publish a message to the HCS topic
     // Step (2) in the accompanying tutorial
     const topicMsgSubmitTx = await new TopicMessageSubmitTransaction()
         //Set the transaction memo with the hello future world ID
-        .setTransactionMemo(hfwId)
-        //The ID of the topic that was created in the previous step
+        .setTransactionMemo(logger.scriptId)
         .setTopicId(topicId)
         //Set the topic message contents
         .setMessage(`Hello HCS! - ${yourName}`)
@@ -78,7 +81,7 @@ async function scriptHcsTopic() {
 
     // Get the transaction ID of the transaction. The SDK automatically generates and assigns a transaction ID when the transaction is created
     const topicMsgSubmitTxId = topicMsgSubmitTx.transactionId;
-    console.log('The message submit create transaction ID: ',
+    logger.log('The message submit create transaction ID: ',
         topicMsgSubmitTxId.toString());
 
     // Sign the transaction with the account key that will be paying for this transaction
@@ -92,8 +95,7 @@ async function scriptHcsTopic() {
 
     // Get the topic message sequence number
     const topicMsgSeqNum = topicMsgSubmitTxReceipt.topicSequenceNumber;
-    console.log('topicMsgSeqNum:', topicMsgSeqNum.toString());
-    console.log('');
+    logger.log('topicMsgSeqNum:', topicMsgSeqNum.toString());
 
     client.close();
 
@@ -102,44 +104,40 @@ async function scriptHcsTopic() {
     // This is a manual step, the code below only outputs the URL to visit
 
     // View your topic on HashScan
-    blueLog('View the topic on HashScan');
+    await logger.logSectionWithWaitPrompt('View the topic on HashScan');
     const topicVerifyHashscanUrl = `https://hashscan.io/testnet/topic/${topicId.toString()}`;
-    console.log('Paste URL in browser:', topicVerifyHashscanUrl);
-    console.log('');
+    logger.log('Paste URL in browser:', topicVerifyHashscanUrl);
 
     // Wait for 6s for record files (blocks) to propagate to mirror nodes
     await new Promise((resolve) => setTimeout(resolve, 6_000));
 
     // NOTE: Verify topic using Mirror Node API
     // Step (4) in the accompanying tutorial
-    blueLog('Get topic data from the Hedera Mirror Node');
+    await logger.logSectionWithWaitPrompt('Get topic data from the Hedera Mirror Node');
     const topicVerifyMirrorNodeApiUrl =
         `https://testnet.mirrornode.hedera.com/api/v1/topics/${topicId.toString()}/messages?encoding=base64&limit=5&order=asc&sequencenumber=1`;
-    console.log(
-        'The topic Hedera Mirror Node API URL:\n',
-        topicVerifyMirrorNodeApiUrl
+    logger.log(
+        'The topic Hedera Mirror Node API URL:',
+        '\n',
+        topicVerifyMirrorNodeApiUrl,
     );
     const topicVerifyFetch = await fetch(topicVerifyMirrorNodeApiUrl);
     const topicVerifyJson = await topicVerifyFetch.json();
     const topicVerifyMessages =
         topicVerifyJson?.messages;
-    console.log('Number of messages retrieved from this topic:', topicVerifyMessages?.length || 0);
+    logger.log('Number of messages retrieved from this topic:', topicVerifyMessages?.length || 0);
     const topicVerifyMessagesParsed = (topicVerifyMessages || [])
         .map((msg) => {
             const seqNum = msg?.sequence_number || -1;
             const decodedMsg = Buffer.from((msg?.message || ''), 'base64').toString();
             return `#${seqNum}: ${decodedMsg}`;
         });
-    console.log('Messages retrieved from this topic:', topicVerifyMessagesParsed);
-    console.log('');
+    logger.log('Messages retrieved from this topic:', topicVerifyMessagesParsed);
 
-    metricsTrackOnHcs('scriptHcsTopic', 'complete');
+    logger.logComplete('Hello Future World - HCS Topic - complete');
 }
 
 scriptHcsTopic().catch((ex) => {
-    if (client) {
-        client.close();
-    }
-    console.error(ex);
-    metricsTrackOnHcs('scriptHcsTopic', 'error');
+    client && client.close();
+    logger ? logger.logError(ex) : console.error(ex);
 });

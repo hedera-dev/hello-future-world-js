@@ -1,5 +1,22 @@
 #!/bin/bash
 
+DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# install main dependencies
+cd ${DIR}/..
+npm install
+
+if command -v "gp" &> /dev/null
+then
+  gp sync-done get_dependencies_base
+fi
+
+# install additional dependencies
+cd ${DIR}/../hscs-smart-contract
+npm install
+
+cd ${DIR}
+
 # get specific tag name for latest RPC relay
 export RPC_RELAY_VERSION=$( curl -L \
   -H "Accept: application/vnd.github+json" \
