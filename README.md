@@ -292,7 +292,8 @@ Steps:
 - [x] update `logger.json.sample` file to include all fields
 - [x] rename `hfwId` to `scriptId` consistently
 - [ ] separate time taken to complete first run and time taken to complete most recent run
-- [ ] different icons when logging start, complete, error, and summary
+- [x] different icons when logging start, complete, error, and summary
+- [x] fix ANSI codes for colour and add BRIGHT (`\x1b[1m`) to make headings bold
 - [ ] ideate: commemorative completion task reward
 - [ ] change literal amounts specified in constants
 - [ ] add note not using "anon" for public transactions

@@ -20,8 +20,33 @@ const DEFAULT_VALUES = {
     gitRefsHeadMainFilePath: path.resolve(__dirname, '../.git/refs/heads/main'),
 };
 
-const ANSI_ESCAPE_CODE_BLUE = '\x1b[34m%s\x1b[0m';
-const HELLIP_CHAR = '…';
+const ANSI_BASE = {
+    RESET: '\x1b[0m',
+    BRIGHT: '\x1b[1m',
+    FG_RED: '\x1b[31m',
+    FG_GREEN: '\x1b[32m',
+    FG_YELLOW: '\x1b[33m',
+    FG_BLUE: '\x1b[34m',
+    FG_PURPLE: '\x1b[35m',
+};
+const ANSI = {
+    RESET: ANSI_BASE.RESET,
+    BRIGHT: ANSI_BASE.BRIGHT,
+    FG_RED: ANSI_BASE.BRIGHT + ANSI_BASE.FG_RED,
+    FG_GREEN: ANSI_BASE.BRIGHT + ANSI_BASE.FG_GREEN,
+    FG_YELLOW: ANSI_BASE.BRIGHT + ANSI_BASE.FG_YELLOW,
+    FG_BLUE: ANSI_BASE.BRIGHT + ANSI_BASE.FG_BLUE,
+    FG_PURPLE: ANSI_BASE.BRIGHT + ANSI_BASE.FG_PURPLE,
+};
+// const ANSI_ESCAPE_CODE_BLUE = '\x1b[34m%s\x1b[0m';
+const CHARS = {
+    HELLIP: '…',
+    START: '🏁',
+    SECTION: '🟣',
+    COMPLETE: '🎉',
+    ERROR: '❌',
+    SUMMARY: '🔢',
+};
 const hashSha256 = crypto.createHash('sha256');
 
 async function createLogger({
@@ -94,8 +119,7 @@ async function createLogger({
     function logSection(...strings) {
         logger.step += 1;
         logger.lastMsg = ([...strings])[0];
-        console.log('');
-        return blueLog(...strings);
+        return console.log(CHARS.SECTION, ANSI.FG_PURPLE, ...strings, ANSI.RESET, CHARS.HELLIP);
     }
 
     async function logSectionWithWaitPrompt(...strings) {
@@ -111,7 +135,7 @@ async function createLogger({
     }
 
     function logStart(...strings) {
-        const retVal = logSection(...strings);
+        const retVal = log(CHARS.START, ANSI.FG_GREEN, ...strings, ANSI.RESET);
         const msg = getStartMessage();
         logger.stats.lastStart = Math.max(msg.time, logger.stats.lastStart);
         logger.stats.firstStart = Math.min(msg.time, logger.stats.firstStart);
@@ -136,7 +160,7 @@ async function createLogger({
     }
 
     function logCompleteImplStart(...strings) {
-        const retVal = logSection(...strings);
+        const retVal = log(CHARS.COMPLETE, ANSI.FG_GREEN, ...strings, ANSI.RESET);
         const msg = getCompleteMessage();
         logger.stats.lastComplete = Math.max(msg.time, logger.stats.lastComplete);
         logger.stats.firstComplete = Math.min(msg.time, logger.stats.firstComplete);
@@ -166,7 +190,7 @@ async function createLogger({
         await metricsTrackOnHcs(logger, msg);
         await writeLoggerFile(logger);
         await gracefullyCloseClient();
-        return log(...strings);
+        return log(CHARS.ERROR, ANSI.FG_RED, 'Error ID:', msg.detail, ANSI.RESET, '\n', ...strings);
     }
 
     function logErrorImplStart() {
@@ -412,7 +436,7 @@ async function logMetricsSummary() {
     });
 
     console.log();
-    blueLog('Summary metrics');
+    console.log(CHARS.SUMMARY, ANSI.FG_YELLOW, 'Summary metrics', ANSI.RESET, CHARS.HELLIP);
 
     console.log('\nHas completed a task:', hasCompletedFirstTask);
     if (hasCompletedFirstTask) {
@@ -470,10 +494,6 @@ function displayDuration(ms) {
         out = `${minutes}min ${out}`;
     }
     return out;
-}
-
-function blueLog(...strings) {
-    return console.log(ANSI_ESCAPE_CODE_BLUE, '🔵', ...strings, HELLIP_CHAR);
 }
 
 function convertTransactionIdForMirrorNodeApi(txId) {
@@ -636,9 +656,8 @@ module.exports = {
     writeLoggerFile,
     logMetricsSummary,
 
-    ANSI_ESCAPE_CODE_BLUE,
-    HELLIP_CHAR,
-    blueLog,
+    ANSI,
+    CHARS,
     convertTransactionIdForMirrorNodeApi,
     queryAccountByEvmAddress,
     queryAccountByPrivateKey,
