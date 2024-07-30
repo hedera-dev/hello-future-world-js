@@ -201,7 +201,7 @@ async function promptInputs() {
         let use1stAccountAsOperator = false;
 
         // prompt user for their preferred moniker
-        logger.log('Enter your name or nickname');
+        logger.log('Enter your pseudonym (note that this will be written on network)');
         if (yourName) {
             logger.log(`Current: "${yourName}"`);
             logger.log('(enter blank to re-use the above value)');

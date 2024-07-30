@@ -66,8 +66,9 @@ What you will accomplish:
 
 Steps:
 
-1. Enter name or nickname
+1. Enter pseudonym
    - Input any value, can be fictional/ anonymous/ etc
+   - Note that this will be written on the network
 1. Enter private key
    - Option 1: Input `none`.
      This will mean that an account generated from a seed phrase will be used (later).
@@ -296,7 +297,7 @@ Steps:
 - [x] fix ANSI codes for colour and add BRIGHT (`\x1b[1m`) to make headings bold
 - [ ] ideate: commemorative completion task reward
 - [ ] change literal amounts specified in constants
-- [ ] add note not using "anon" for public transactions
+- [x] add note not using "anon" for public transactions
 
 
 ## Author
