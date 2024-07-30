@@ -296,7 +296,8 @@ Steps:
 - [x] different icons when logging start, complete, error, and summary
 - [x] fix ANSI codes for colour and add BRIGHT (`\x1b[1m`) to make headings bold
 - [ ] ideate: commemorative completion task reward
-- [ ] change literal amounts specified in constants
+- [x] change literal amounts specified in constants in transfer HBAR script
+- [x] use existing accounts instead of lazy account creation in transfer HBAR script
 - [x] add note not using "anon" for public transactions
 
 

@@ -44,13 +44,6 @@ async function scriptTransferHbar() {
     // The client operator ID and key is the account that will be automatically set to pay for the transaction fees for each transaction
     client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
-    const account1EvmAddress = process.env.ACCOUNT_1_EVM_ADDRESS;
-    const account2EvmAddress = process.env.ACCOUNT_2_EVM_ADDRESS;
-    logger.log('Will transfer HBAR to these accounts:', account1EvmAddress, account2EvmAddress);
-    if (!account1EvmAddress || !account2EvmAddress) {
-        throw new Error('Must set ACCOUNT_1_EVM_ADDRESS, ACCOUNT_2_EVM_ADDRESS');
-    }
-
     // NOTE: Transfer HBAR using TransferTransaction
     // Step (1) in the accompanying tutorial
     await logger.logSectionWithWaitPrompt(
@@ -58,12 +51,12 @@ async function scriptTransferHbar() {
 
     const transferTx = await new TransferTransaction()
         .setTransactionMemo(logger.scriptId)
-        // Debit 6.62607015 + 0.00000001 hbars from the operator account
-        .addHbarTransfer(operatorId, new Hbar(-662607016, HbarUnit.Tinybar))
-        // Credit 0.00000001 hbars to EVM address 0
-        .addHbarTransfer(account1EvmAddress, new Hbar(1, HbarUnit.Tinybar))
-        // Credit 6.62607015 hbars to EVM address 1
-        .addHbarTransfer(account2EvmAddress, new Hbar(662607015, HbarUnit.Tinybar))
+        // Debit 7.62607015 hbars from the operator account
+        .addHbarTransfer(operatorId, new Hbar(-762607015, HbarUnit.Tinybar))
+        // Credit 6.62607015 hbars to account 0.0.1
+        .addHbarTransfer('0.0.1', new Hbar(662607015, HbarUnit.Tinybar))
+        // Credit 1.00000000 hbars to account 0.0.1
+        .addHbarTransfer('0.0.2', new Hbar(100000000, HbarUnit.Tinybar))
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
 
@@ -89,7 +82,7 @@ async function scriptTransferHbar() {
     // NOTE: Query HBAR balance using AccountBalanceQuery
     // Step (2) in the accompanying tutorial
     const newAccountBalance = new AccountBalanceQuery()
-        .setAccountId(account1EvmAddress)
+        .setAccountId('0.0.1')
         .execute(client);
     const newHbarBalance = (await newAccountBalance).hbars;
     logger.log('The new account balance after the transfer:', newHbarBalance.toString());
@@ -124,7 +117,6 @@ async function scriptTransferHbar() {
     const transferJson = await transferFetch.json();
     const transferJsonAccountTransfers = transferJson?.transactions[0]?.transfers;
     const transferJsonAccountTransfersFinalAmounts = transferJsonAccountTransfers
-        ?.slice(-3)
         ?.map((obj) => Hbar.from(obj.amount, HbarUnit.Tinybar).toString(HbarUnit.Hbar));
     logger.log(
         'The debit and credit amounts of the transfer transaction:\n',
