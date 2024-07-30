@@ -6,6 +6,6 @@
     "metricsHcsTopicMemo": "HFWV2",
     "metricsAccountId": "",
     "metricsAccountKey": "",
-    "metricsHcsDisabled": ""
+    "metricsHcsDisabled": false
   }
 }

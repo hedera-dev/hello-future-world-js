@@ -45,7 +45,7 @@ async function scriptHtsFungibleToken() {
     await logger.logSectionWithWaitPrompt('Creating new HTS token');
     const tokenCreateTx = await new TokenCreateTransaction()
         //Set the transaction memo
-        .setTransactionMemo(hfwId)
+        .setTransactionMemo(logger.scriptId)
         //Set the token memo
         .setTransactionMemo(logger.scriptId)
         .setTokenMemo(`${logger.scriptId} token by ${yourName}`)

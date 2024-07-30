@@ -288,6 +288,15 @@ Steps:
 - [x] make log outputs consistent in the HSCS output
 - [x] make order of hashscan URL and then mirror node API check consistent across all 4
 - [x] solidity file in HSCS HW - update the constant both var name and var value
+- [x] update `.env.sample` file to include all fields eventually generated
+- [x] update `logger.json.sample` file to include all fields
+- [x] rename `hfwId` to `scriptId` consistently
+- [ ] separate time taken to complete first run and time taken to complete most recent run
+- [ ] different icons when logging start, complete, error, and summary
+- [ ] ideate: commemorative completion task reward
+- [ ] change literal amounts specified in constants
+- [ ] add note not using "anon" for public transactions
+
 
 ## Author
 
