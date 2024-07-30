@@ -411,10 +411,12 @@ async function logMetricsSummary() {
     }, 0);
     const completedTaskDurations = completedTasks.map((task) => {
         const timeToComplete = task.firstComplete - task.firstStart;
+        const timeToCompleteLatest = task.lastComplete - task.lastStart;
         const errorsBeforeFirstComplete = task.countErrorBeforeFirstComplete;
         return {
             name: task.scriptId,
             duration: timeToComplete,
+            durationLatest: timeToCompleteLatest,
             errors: errorsBeforeFirstComplete,
         };
     });
@@ -459,7 +461,8 @@ async function logMetricsSummary() {
     console.log('\nCompleted tasks:', completedTaskDurations.length);
     completedTaskDurations.forEach((info, index) => {
         console.log(`(${index + 1}) Task ID:`, info.name);
-        console.log('Time taken to complete:', displayDuration(info.duration));
+        console.log('Time taken to complete (first):', displayDuration(info.duration));
+        console.log('Time taken to complete (latest):', displayDuration(info.durationLatest));
         console.log('Errors prior to completion:', info.errors);
     });
     console.log('\nAttempted but incomplete tasks:', incompleteAttemptedTaskDurations.length);
