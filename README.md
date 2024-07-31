@@ -32,7 +32,7 @@ and follow the instructions in the "pre-requisites" section of the accompanying 
    - TODO specific instructions for prompts
 1. Congratulations, you can now move on to the sequences! 🎉
 
-### How to run on your computer
+### How to run using Gitpod
 
 To run on Gitpod (a cloud development environment), click the button below:
 
