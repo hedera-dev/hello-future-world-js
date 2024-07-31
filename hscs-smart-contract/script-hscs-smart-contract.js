@@ -7,6 +7,7 @@ import { ContractFactory } from '@ethersproject/contracts';
 import dotenv from 'dotenv';
 import {
     CHARS,
+    applyAnsi,
     createLogger,
 } from '../util/util.js';
 
@@ -55,7 +56,10 @@ async function scriptHscsSmartContract() {
     const myContractAddress = myContract.address;
     const myContractHashscanUrl = `https://hashscan.io/testnet/contract/${myContractAddress}`;
     logger.log('Deployed smart contract address:', myContractAddress);
-    logger.log('Deployed smart contract Hashscan URL:', myContractHashscanUrl);
+    logger.log(
+        'Deployed smart contract Hashscan URL:\n',
+        ...applyAnsi('URL', myContractHashscanUrl),
+    );
 
     // Write data to smart contract
     // NOTE: Invoke a smart contract transaction
@@ -66,7 +70,10 @@ async function scriptHscsSmartContract() {
     const scWriteTxHash = scWriteTxReceipt.transactionHash;
     const scWriteTxHashscanUrl = `https://hashscan.io/testnet/transaction/${scWriteTxHash}`;
     logger.log('Smart contract write transaction hash', scWriteTxHash);
-    logger.log('Smart contract write transaction Hashscan URL', scWriteTxHashscanUrl);
+    logger.log(
+        'Smart contract write transaction Hashscan URL:\n',
+        ...applyAnsi('URL', scWriteTxHashscanUrl),
+    );
 
     // Read data from smart contract
     // NOTE: Invoke a smart contract query

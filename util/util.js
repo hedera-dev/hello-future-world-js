@@ -20,25 +20,20 @@ const DEFAULT_VALUES = {
     gitRefsHeadMainFilePath: path.resolve(__dirname, '../.git/refs/heads/main'),
 };
 
-const ANSI_BASE = {
+const ANSI = {
     RESET: '\x1b[0m',
     BRIGHT: '\x1b[1m',
+    BRIGHT_OFF: '\x1b[21m',
+    UNDERLINE: '\x1b[4m',
+    UNDERLINE_OFF: '\x1b[24m',
     FG_RED: '\x1b[31m',
     FG_GREEN: '\x1b[32m',
     FG_YELLOW: '\x1b[33m',
     FG_BLUE: '\x1b[34m',
     FG_PURPLE: '\x1b[35m',
+    FG_CYAN: '\x1b[36m',
+    FG_DEFAULT: '\x1b[39m',
 };
-const ANSI = {
-    RESET: ANSI_BASE.RESET,
-    BRIGHT: ANSI_BASE.BRIGHT,
-    FG_RED: ANSI_BASE.BRIGHT + ANSI_BASE.FG_RED,
-    FG_GREEN: ANSI_BASE.BRIGHT + ANSI_BASE.FG_GREEN,
-    FG_YELLOW: ANSI_BASE.BRIGHT + ANSI_BASE.FG_YELLOW,
-    FG_BLUE: ANSI_BASE.BRIGHT + ANSI_BASE.FG_BLUE,
-    FG_PURPLE: ANSI_BASE.BRIGHT + ANSI_BASE.FG_PURPLE,
-};
-// const ANSI_ESCAPE_CODE_BLUE = '\x1b[34m%s\x1b[0m';
 const CHARS = {
     HELLIP: '…',
     START: '🏁',
@@ -117,9 +112,7 @@ async function createLogger({
     }
 
     function logSection(...strings) {
-        logger.step += 1;
-        logger.lastMsg = ([...strings])[0];
-        return console.log(CHARS.SECTION, ANSI.FG_PURPLE, ...strings, ANSI.RESET, CHARS.HELLIP);
+        return log(...applyAnsi('SECTION', ...strings));
     }
 
     async function logSectionWithWaitPrompt(...strings) {
@@ -135,7 +128,7 @@ async function createLogger({
     }
 
     function logStart(...strings) {
-        const retVal = log(CHARS.START, ANSI.FG_GREEN, ...strings, ANSI.RESET);
+        const retVal = log(...applyAnsi('START', ...strings));
         const msg = getStartMessage();
         logger.stats.lastStart = Math.max(msg.time, logger.stats.lastStart);
         logger.stats.firstStart = Math.min(msg.time, logger.stats.firstStart);
@@ -160,7 +153,7 @@ async function createLogger({
     }
 
     function logCompleteImplStart(...strings) {
-        const retVal = log(CHARS.COMPLETE, ANSI.FG_GREEN, ...strings, ANSI.RESET);
+        const retVal = log(...applyAnsi('COMPLETE', ...strings));
         const msg = getCompleteMessage();
         logger.stats.lastComplete = Math.max(msg.time, logger.stats.lastComplete);
         logger.stats.firstComplete = Math.min(msg.time, logger.stats.firstComplete);
@@ -190,7 +183,7 @@ async function createLogger({
         await metricsTrackOnHcs(logger, msg);
         await writeLoggerFile(logger);
         await gracefullyCloseClient();
-        return log(CHARS.ERROR, ANSI.FG_RED, 'Error ID:', msg.detail, ANSI.RESET, '\n', ...strings);
+        return log(...applyAnsi('ERROR', 'Error ID:', msg.detail), '\n', ...strings);
     }
 
     function logErrorImplStart() {
@@ -438,7 +431,7 @@ async function logMetricsSummary() {
     });
 
     console.log();
-    console.log(CHARS.SUMMARY, ANSI.FG_YELLOW, 'Summary metrics', ANSI.RESET, CHARS.HELLIP);
+    console.log(...applyAnsi('SUMMARY', 'Summary metrics'));
 
     console.log('\nHas completed a task:', hasCompletedFirstTask);
     if (hasCompletedFirstTask) {
@@ -473,9 +466,8 @@ async function logMetricsSummary() {
     });
 
     console.log(
-        '\nView HCS metrics on HashScan:',
-        '\n',
-        `https://hashscan.io/testnet/topic/${loggerFile.config.metricsHcsTopicId}`,
+        '\nView HCS metrics on HashScan:\n',
+        ...applyAnsi('URL', `https://hashscan.io/testnet/topic/${loggerFile.config.metricsHcsTopicId}`),
         `\nUsing the anonymised key: ${loggerFile.config.metricsId}`,
 
     );
@@ -487,6 +479,28 @@ async function logMetricsSummary() {
         completedTasks: completedTaskDurations,
         attemptedTasks: incompleteAttemptedTaskDurations,
     };
+}
+
+function applyAnsi(ansiType, ...strings) {
+    switch (ansiType) {
+        case 'START':
+            return [CHARS.START + ANSI.BRIGHT + ANSI.FG_GREEN, ...strings, ANSI.RESET, CHARS.HELLIP];
+        case 'SECTION':
+            return [CHARS.SECTION + ANSI.BRIGHT + ANSI.FG_PURPLE, ...strings, ANSI.RESET, CHARS.HELLIP];
+        case 'COMPLETE':
+            return [CHARS.COMPLETE + ANSI.BRIGHT + ANSI.FG_GREEN, ...strings, ANSI.RESET, CHARS.HELLIP];
+        case 'ERROR':
+            return [CHARS.ERROR + ANSI.BRIGHT + ANSI.FG_RED, ...strings, ANSI.RESET, CHARS.HELLIP];
+        case 'SUMMARY':
+            return [CHARS.SUMMARY + ANSI.BRIGHT + ANSI.FG_YELLOW, ...strings, ANSI.RESET, CHARS.HELLIP];
+        case 'URL':
+            if (strings.length === 1 && typeof strings[0] === 'string') {
+                return [ANSI.UNDERLINE + ANSI.FG_CYAN + strings[0] + ANSI.FG_DEFAULT + ANSI.UNDERLINE_OFF]
+            }
+            return [ANSI.UNDERLINE, ...strings, ANSI.UNDERLINE_OFF];
+        default:
+            return [...strings];
+    }
 }
 
 function displayDuration(ms) {
@@ -654,13 +668,14 @@ async function metricsTrackOnHcs(logger, {
 }
 
 module.exports = {
+    ANSI,
+    CHARS,
+    applyAnsi,
     displayDuration,
     createLogger,
     writeLoggerFile,
     logMetricsSummary,
 
-    ANSI,
-    CHARS,
     convertTransactionIdForMirrorNodeApi,
     queryAccountByEvmAddress,
     queryAccountByPrivateKey,
