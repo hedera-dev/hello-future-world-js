@@ -26,10 +26,13 @@ To run on your own computer, `git clone` this repo,
 and follow the instructions in the "pre-requisites" section of the accompanying tutorial.
 
 1. Install all the prerequisite software
-1. Copy `.env.sample` into `.env` and update values manually
-1. Alternatively run `./init/00-main.sh` and this script will interactively prompt you,
+1. Run `./init/00-main.sh` and this script will interactively prompt you,
    and populate the values needed in the `.env` file
-   - TODO specific instructions for prompts
+1. Run `./init/03-get-dependencies.sh` and this script will install the required dependencies
+1. Run `./init/04-rpcrelay-run.sh` and this script will run a Hedera JSON-RPC Relay instance
+   - Note that this requires `docker` to be available on your system
+   - Note that you may delay performing this step until later,
+     you only need it for HSCS related sequences
 1. Congratulations, you can now move on to the sequences! 🎉
 
 ### How to run using Gitpod
@@ -44,9 +47,6 @@ To run on Gitpod (a cloud development environment), click the button below:
 1. In the VS code terminal, you should see 3 terminals, `rpcrelay_pull`, `rpcrelay_run`, and `main`
 1. You do not need to use the `rpcrelay_pull` and `rpcrelay_run` terminals, let them run in the background
 1. In the `main` terminal, which is the one that displays by default, a script will interactively prompt you
-1. Follow the instructions in the script and copy-paste values or accept its default suggestions
-   - TODO specific instructions for prompts
-1. After the script has completed, open the `.env` file to inspect its contents
 1. Congratulations, you can now move on to the sequences! 🎉
 
 ## Sequences
