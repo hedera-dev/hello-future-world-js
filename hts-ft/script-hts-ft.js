@@ -38,22 +38,32 @@ async function scriptHtsFungibleToken() {
     logger.log('Using your name as:', yourName);
     logger.log('Using account:', operatorIdStr);
 
+    //ToDo: Generate a new key for the token's adminKey
+
     // NOTE: Create a HTS token
     // Step (1) in the accompanying tutorial
     await logger.logSectionWithWaitPrompt('Creating new HTS token');
     const tokenCreateTx = await new TokenCreateTransaction()
+        //Set the transaction memo
+        .setTransactionMemo(logger.scriptId)
+        //Set the token memo
         .setTransactionMemo(logger.scriptId)
         .setTokenMemo(`${logger.scriptId} token by ${yourName}`)
         // HTS `TokenType.FungibleCommon` behaves similarly to ERC20
         .setTokenType(TokenType.FungibleCommon)
         // Configure token options: name, symbol, decimals, initial supply
         .setTokenName(`${yourName} coin`)
+        //Set the token symbol
         .setTokenSymbol(logger.scriptId)
+        //Set the token decimals to 2
         .setDecimals(2)
+        //Set the initial supply of the token to 1,000,000
         .setInitialSupply(1_000_000)
         // Configure token access permissions: treasury account, admin, freezing
         .setTreasuryAccountId(operatorId)
-        .setAdminKey(operatorKey)
+        //Set the admin key of the the token to the operator account
+        .setAdminKey(operatorKey) //ToDo: replace with adminKey
+        //Set the freeze default value to false
         .setFreezeDefault(false)
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
@@ -65,6 +75,8 @@ async function scriptHtsFungibleToken() {
 
     // Sign the transaction with the account key that will be paying for this transaction
     const tokenCreateTxSigned = await tokenCreateTx.sign(operatorKey);
+
+    //ToDo: Sign with the admin key
 
     // Submit the transaction to the Hedera Testnet
     const tokenCreateTxSubmitted = await tokenCreateTxSigned.execute(client);

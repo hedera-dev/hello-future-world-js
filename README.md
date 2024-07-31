@@ -26,10 +26,13 @@ To run on your own computer, `git clone` this repo,
 and follow the instructions in the "pre-requisites" section of the accompanying tutorial.
 
 1. Install all the prerequisite software
-1. Copy `.env.sample` into `.env` and update values manually
-1. Alternatively run `./init/00-main.sh` and this script will interactively prompt you,
+1. Run `./init/00-main.sh` and this script will interactively prompt you,
    and populate the values needed in the `.env` file
-   - TODO specific instructions for prompts
+1. Run `./init/03-get-dependencies.sh` and this script will install the required dependencies
+1. Run `./init/04-rpcrelay-run.sh` and this script will run a Hedera JSON-RPC Relay instance
+   - Note that this requires `docker` to be available on your system
+   - Note that you may delay performing this step until later,
+     you only need it for HSCS related sequences
 1. Congratulations, you can now move on to the sequences! 🎉
 
 ### How to run using Gitpod
@@ -44,9 +47,6 @@ To run on Gitpod (a cloud development environment), click the button below:
 1. In the VS code terminal, you should see 3 terminals, `rpcrelay_pull`, `rpcrelay_run`, and `main`
 1. You do not need to use the `rpcrelay_pull` and `rpcrelay_run` terminals, let them run in the background
 1. In the `main` terminal, which is the one that displays by default, a script will interactively prompt you
-1. Follow the instructions in the script and copy-paste values or accept its default suggestions
-   - TODO specific instructions for prompts
-1. After the script has completed, open the `.env` file to inspect its contents
 1. Congratulations, you can now move on to the sequences! 🎉
 
 ## Sequences
@@ -66,8 +66,9 @@ What you will accomplish:
 
 Steps:
 
-1. Enter name or nickname
+1. Enter pseudonym
    - Input any value, can be fictional/ anonymous/ etc
+   - Note that this will be written on the network
 1. Enter private key
    - Option 1: Input `none`.
      This will mean that an account generated from a seed phrase will be used (later).
@@ -288,6 +289,17 @@ Steps:
 - [x] make log outputs consistent in the HSCS output
 - [x] make order of hashscan URL and then mirror node API check consistent across all 4
 - [x] solidity file in HSCS HW - update the constant both var name and var value
+- [x] update `.env.sample` file to include all fields eventually generated
+- [x] update `logger.json.sample` file to include all fields
+- [x] rename `hfwId` to `scriptId` consistently
+- [x] separate time taken to complete first run and time taken to complete most recent run
+- [x] different icons when logging start, complete, error, and summary
+- [x] fix ANSI codes for colour and add BRIGHT (`\x1b[1m`) to make headings bold
+- [ ] ideate: commemorative completion task reward
+- [x] change literal amounts specified in constants in transfer HBAR script
+- [x] use existing accounts instead of lazy account creation in transfer HBAR script
+- [x] add note not using "anon" for public transactions
+
 
 ## Author
 

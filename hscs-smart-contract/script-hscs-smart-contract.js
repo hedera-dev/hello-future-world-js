@@ -6,7 +6,7 @@ import { Wallet } from '@ethersproject/wallet';
 import { ContractFactory } from '@ethersproject/contracts';
 import dotenv from 'dotenv';
 import {
-    HELLIP_CHAR,
+    CHARS,
     createLogger,
 } from '../util/util.js';
 
@@ -42,8 +42,8 @@ async function scriptHscsSmartContract() {
     await logger.logSectionWithWaitPrompt('Reading compiled smart contract artefacts');
     const abi = await fs.readFile(`${solidityFileName}.abi`, { encoding: 'utf8' });
     const evmBytecode = await fs.readFile(`${solidityFileName}.bin`, { encoding: 'utf8' });
-    logger.log('Compiled smart contract ABI:', abi.substring(0, 32), HELLIP_CHAR);
-    logger.log('Compiled smart contract EVM bytecode:', evmBytecode.substring(0, 32), HELLIP_CHAR);
+    logger.log('Compiled smart contract ABI:', abi.substring(0, 32), CHARS.HELLIP);
+    logger.log('Compiled smart contract EVM bytecode:', evmBytecode.substring(0, 32), CHARS.HELLIP);
 
     // Deploy smart contract
     // NOTE: Prepare smart contract for deployment

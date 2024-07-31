@@ -38,10 +38,11 @@ async function scriptHcsTopic() {
     logger.log('Using your name as:', yourName);
     logger.log('Using account:', operatorIdStr);
 
-    // NOTE: Create a HCS topic
+    // NOTE: Create a Hedera Consensus Service topic
     // Step (1) in the accompanying tutorial
     await logger.logSectionWithWaitPrompt('Creating new HCS topic');
     const topicCreateTx = await new TopicCreateTransaction()
+        //Set the transaction memo with the hellow future world ID
         .setTransactionMemo(logger.scriptId)
         .setTopicMemo(`HFW-HCS topic by ${yourName}`)
         // Freeze the transaction to prepare for signing
@@ -69,8 +70,10 @@ async function scriptHcsTopic() {
     // NOTE: Publish a message to the HCS topic
     // Step (2) in the accompanying tutorial
     const topicMsgSubmitTx = await new TopicMessageSubmitTransaction()
+        //Set the transaction memo with the hello future world ID
         .setTransactionMemo(logger.scriptId)
         .setTopicId(topicId)
+        //Set the topic message contents
         .setMessage(`Hello HCS! - ${yourName}`)
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
