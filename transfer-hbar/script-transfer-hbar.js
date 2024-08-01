@@ -29,16 +29,14 @@ async function scriptTransferHbar() {
     logger.log('Read .env file');
 
     // Initialise the operator account
-    const yourName = process.env.YOUR_NAME;
     const operatorIdStr = process.env.OPERATOR_ACCOUNT_ID;
     const operatorKeyStr = process.env.OPERATOR_ACCOUNT_PRIVATE_KEY;
 
-    if (!yourName || !operatorIdStr || !operatorKeyStr) {
+    if (!operatorIdStr || !operatorKeyStr) {
         throw new Error('Must set YOUR_NAME, OPERATOR_ACCOUNT_ID, OPERATOR_ACCOUNT_PRIVATE_KEY');
     }
     const operatorId = AccountId.fromString(operatorIdStr);
     const operatorKey = PrivateKey.fromStringECDSA(operatorKeyStr);
-    logger.log('Using your name as:', yourName);
     logger.log('Using account:', operatorIdStr);
 
     // The client operator ID and key is the account that will be automatically set to pay for the transaction fees for each transaction
@@ -50,12 +48,12 @@ async function scriptTransferHbar() {
         'Creating, signing, and submitting the transfer transaction');
 
     const transferTx = await new TransferTransaction()
-        .setTransactionMemo(logger.scriptId)
-        // Debit 7.62607015 hbars from the operator account
+        .setTransactionMemo(`Hello Future World transfer - ${logger.version}`)
+        // Debit 7.62607015 hbars from the operator account (sender)
         .addHbarTransfer(operatorId, new Hbar(-762607015, HbarUnit.Tinybar))
-        // Credit 6.62607015 hbars to account 0.0.1
+        // Credit 6.62607015 hbars to account 0.0.1 (1st recipient)
         .addHbarTransfer('0.0.1', new Hbar(662607015, HbarUnit.Tinybar))
-        // Credit 1.00000000 hbars to account 0.0.1
+        // Credit 1.00000000 hbars to account 0.0.2 (2nd recipient)
         .addHbarTransfer('0.0.2', new Hbar(100000000, HbarUnit.Tinybar))
         // Freeze the transaction to prepare for signing
         .freezeWith(client);

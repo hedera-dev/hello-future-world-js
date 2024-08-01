@@ -26,25 +26,21 @@ async function scriptHcsTopic() {
     logger.log('Read .env file');
 
     // Initialise the operator account
-    const yourName = process.env.YOUR_NAME;
     const operatorIdStr = process.env.OPERATOR_ACCOUNT_ID;
     const operatorKeyStr = process.env.OPERATOR_ACCOUNT_PRIVATE_KEY;
-    if (!yourName || !operatorIdStr || !operatorKeyStr) {
-        throw new Error('Must set YOUR_NAME, OPERATOR_ACCOUNT_ID and OPERATOR_ACCOUNT_PRIVATE_KEY environment variables');
+    if (!operatorIdStr || !operatorKeyStr) {
+        throw new Error('Must set OPERATOR_ACCOUNT_ID and OPERATOR_ACCOUNT_PRIVATE_KEY environment variables');
     }
     const operatorId = AccountId.fromString(operatorIdStr);
     const operatorKey = PrivateKey.fromStringECDSA(operatorKeyStr);
     client = Client.forTestnet().setOperator(operatorId, operatorKey);
-    logger.log('Using your name as:', yourName);
     logger.log('Using account:', operatorIdStr);
 
     // NOTE: Create a Hedera Consensus Service topic
     // Step (1) in the accompanying tutorial
     await logger.logSectionWithWaitPrompt('Creating new HCS topic');
     const topicCreateTx = await new TopicCreateTransaction()
-        //Set the transaction memo with the hellow future world ID
-        .setTransactionMemo(logger.scriptId)
-        .setTopicMemo(`HFW-HCS topic by ${yourName}`)
+        .setTopicMemo(`Hello Future World topic - ${logger.version}`)
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
 
@@ -71,10 +67,10 @@ async function scriptHcsTopic() {
     // Step (2) in the accompanying tutorial
     const topicMsgSubmitTx = await new TopicMessageSubmitTransaction()
         //Set the transaction memo with the hello future world ID
-        .setTransactionMemo(logger.scriptId)
+        .setTransactionMemo(`Hello Future World topic message - ${logger.version}`)
         .setTopicId(topicId)
         //Set the topic message contents
-        .setMessage(`Hello HCS! - ${yourName}`)
+        .setMessage('Hello HCS!')
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
 

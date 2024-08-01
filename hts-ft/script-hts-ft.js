@@ -26,16 +26,14 @@ async function scriptHtsFungibleToken() {
     logger.log('Read .env file');
 
     // Initialise the operator account
-    const yourName = process.env.YOUR_NAME;
     const operatorIdStr = process.env.OPERATOR_ACCOUNT_ID;
     const operatorKeyStr = process.env.OPERATOR_ACCOUNT_PRIVATE_KEY;
-    if (!yourName || !operatorIdStr || !operatorKeyStr) {
+    if (!operatorIdStr || !operatorKeyStr) {
         throw new Error('Must set OPERATOR_ACCOUNT_ID and OPERATOR_ACCOUNT_PRIVATE_KEY environment variables');
     }
     const operatorId = AccountId.fromString(operatorIdStr);
     const operatorKey = PrivateKey.fromStringECDSA(operatorKeyStr);
     client = Client.forTestnet().setOperator(operatorId, operatorKey);
-    logger.log('Using your name as:', yourName);
     logger.log('Using account:', operatorIdStr);
 
     //ToDo: Generate a new key for the token's adminKey
@@ -45,25 +43,22 @@ async function scriptHtsFungibleToken() {
     await logger.logSectionWithWaitPrompt('Creating new HTS token');
     const tokenCreateTx = await new TokenCreateTransaction()
         //Set the transaction memo
-        .setTransactionMemo(logger.scriptId)
-        //Set the token memo
-        .setTransactionMemo(logger.scriptId)
-        .setTokenMemo(`${logger.scriptId} token by ${yourName}`)
+        .setTransactionMemo(`Hello Future World token - ${logger.version}`)
         // HTS `TokenType.FungibleCommon` behaves similarly to ERC20
         .setTokenType(TokenType.FungibleCommon)
         // Configure token options: name, symbol, decimals, initial supply
-        .setTokenName(`${yourName} coin`)
-        //Set the token symbol
-        .setTokenSymbol(logger.scriptId)
-        //Set the token decimals to 2
+        .setTokenName(`${logger.scriptId} coin`)
+        // Set the token symbol
+        .setTokenSymbol(logger.scriptId.toUpperCase())
+        // Set the token decimals to 2
         .setDecimals(2)
-        //Set the initial supply of the token to 1,000,000
+        // Set the initial supply of the token to 1,000,000
         .setInitialSupply(1_000_000)
         // Configure token access permissions: treasury account, admin, freezing
         .setTreasuryAccountId(operatorId)
-        //Set the admin key of the the token to the operator account
+        // Set the admin key of the the token to the operator account
         .setAdminKey(operatorKey) //ToDo: replace with adminKey
-        //Set the freeze default value to false
+        // Set the freeze default value to false
         .setFreezeDefault(false)
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
