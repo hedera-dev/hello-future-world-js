@@ -33,6 +33,9 @@ const ANSI = {
     FG_PURPLE: '\x1b[35m',
     FG_CYAN: '\x1b[36m',
     FG_DEFAULT: '\x1b[39m',
+    CLEAR_LINE: '\x1b[2K',
+    CURSOR_UP_1: '\x1b[1A',
+    CURSOR_LEFT_MAX: '\x1b[9999D',
 };
 const CHARS = {
     HELLIP: '…',
@@ -112,6 +115,7 @@ async function createLogger({
     }
 
     function logSection(...strings) {
+        console.log();
         return log(...applyAnsi('SECTION', ...strings));
     }
 
@@ -124,6 +128,7 @@ async function createLogger({
         });
         await rlPrompt.question('(Hit the "return" key when ready to proceed)');
         rlPrompt.close();
+        stdout.write(ANSI.CURSOR_UP_1 + ANSI.CLEAR_LINE + ANSI.CURSOR_LEFT_MAX);
         return retVal;
     }
 
@@ -183,6 +188,7 @@ async function createLogger({
         await metricsTrackOnHcs(logger, msg);
         await writeLoggerFile(logger);
         await gracefullyCloseClient();
+        console.log();
         return log(...applyAnsi('ERROR', 'Error ID:', msg.detail), '\n', ...strings);
     }
 
