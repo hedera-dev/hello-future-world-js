@@ -36,7 +36,9 @@ async function scriptHtsFungibleToken() {
     client = Client.forTestnet().setOperator(operatorId, operatorKey);
     logger.log('Using account:', operatorIdStr);
 
-    //ToDo: Generate a new key for the token's adminKey
+    //Generate a new key for the token's adminKey
+    const adminPrivateKey = PrivateKey.generateECDSA();
+    const adminPublicKey = adminPrivateKey.publicKey;
 
     // NOTE: Create a HTS token
     // Step (1) in the accompanying tutorial
@@ -56,8 +58,8 @@ async function scriptHtsFungibleToken() {
         .setInitialSupply(1_000_000)
         // Configure token access permissions: treasury account, admin, freezing
         .setTreasuryAccountId(operatorId)
-        // Set the admin key of the the token to the operator account
-        .setAdminKey(operatorKey) //ToDo: replace with adminKey
+        // Set the admin key of the token
+        .setAdminKey(adminPublicKey) //ToDo: replace with adminKey
         // Set the freeze default value to false
         .setFreezeDefault(false)
         // Freeze the transaction to prepare for signing
@@ -69,7 +71,7 @@ async function scriptHtsFungibleToken() {
         tokenCreateTxId.toString());
 
     // Sign the transaction with the account key that will be paying for this transaction
-    const tokenCreateTxSigned = await tokenCreateTx.sign(operatorKey);
+    const tokenCreateTxSigned = await tokenCreateTx.sign(adminPrivateKey);
 
     //ToDo: Sign with the admin key
 
