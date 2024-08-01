@@ -10,7 +10,6 @@ import {
 import dotenv from 'dotenv';
 import {
     createLogger,
-    applyAnsi,
 } from '../util/util.js';
 
 const logger = await createLogger({
@@ -106,7 +105,7 @@ async function scriptHcsTopic() {
     // View your topic on HashScan
     await logger.logSectionWithWaitPrompt('View the topic on HashScan');
     const topicVerifyHashscanUrl = `https://hashscan.io/testnet/topic/${topicId.toString()}`;
-    logger.log('Paste URL in browser:\n', ...applyAnsi('URL', topicVerifyHashscanUrl));
+    logger.log('Paste URL in browser:\n', ...logger.applyAnsi('URL', topicVerifyHashscanUrl));
 
     // Wait for 6s for record files (blocks) to propagate to mirror nodes
     await new Promise((resolve) => setTimeout(resolve, 6_000));
@@ -118,7 +117,7 @@ async function scriptHcsTopic() {
         `https://testnet.mirrornode.hedera.com/api/v1/topics/${topicId.toString()}/messages?encoding=base64&limit=5&order=asc&sequencenumber=1`;
     logger.log(
         'The topic Hedera Mirror Node API URL:\n',
-        ...applyAnsi('URL', topicVerifyMirrorNodeApiUrl),
+        ...logger.applyAnsi('URL', topicVerifyMirrorNodeApiUrl),
     );
     const topicVerifyFetch = await fetch(topicVerifyMirrorNodeApiUrl);
     const topicVerifyJson = await topicVerifyFetch.json();

@@ -8,7 +8,11 @@ const {
 } = require('../util/util.js');
 
 async function metricsStats() {
-    const metricsSummary = await logMetricsSummary();
+    const logger = await createLogger({
+        scriptId: 'metricsStats',
+        scriptCategory: 'setup',
+    });
+    const metricsSummary = await logMetricsSummary(logger);
     const rlPrompt = readline.createInterface({
         input: stdin,
         output: stdout,
@@ -19,14 +23,11 @@ async function metricsStats() {
     rlPrompt.close();
     const inputAllow1stChar = inputAllow.toLowerCase().charAt(0);
     if (inputAllow1stChar !== 'y') {
+        await logger.gracefullyCloseClient();
         console.log('OK, not logging metrics summary...');
         return;
     }
     console.log('OK, logging metrics summary...');
-    const logger = await createLogger({
-        scriptId: 'metricsStats',
-        scriptCategory: 'setup',
-    });
     logger.config.metricsHcsDisabled = false;
     await writeLoggerFile(logger);
     await logger.logSummary(metricsSummary);

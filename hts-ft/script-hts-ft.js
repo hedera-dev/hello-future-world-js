@@ -9,7 +9,6 @@ import {
 } from '@hashgraph/sdk';
 import dotenv from 'dotenv';
 import {
-    applyAnsi,
     createLogger,
 } from '../util/util.js';
 
@@ -98,7 +97,7 @@ async function scriptHtsFungibleToken() {
     // View your token on HashScan
     await logger.logSectionWithWaitPrompt('View the token on HashScan');
     const tokenVerifyHashscanUrl = `https://hashscan.io/testnet/token/${tokenId.toString()}`;
-    logger.log('Paste URL in browser:\n', ...applyAnsi('URL', tokenVerifyHashscanUrl));
+    logger.log('Paste URL in browser:\n', ...logger.applyAnsi('URL', tokenVerifyHashscanUrl));
 
     // Wait for 6s for record files (blocks) to propagate to mirror nodes
     await new Promise((resolve) => setTimeout(resolve, 6_000));
@@ -110,7 +109,7 @@ async function scriptHtsFungibleToken() {
         `https://testnet.mirrornode.hedera.com/api/v1/tokens/${tokenId.toString()}`;
     logger.log(
         'The token Hedera Mirror Node API URL:\n',
-        ...applyAnsi('URL', tokenVerifyMirrorNodeApiUrl),
+        ...logger.applyAnsi('URL', tokenVerifyMirrorNodeApiUrl),
     );
     const tokenVerifyFetch = await fetch(tokenVerifyMirrorNodeApiUrl);
     const tokenVerifyJson = await tokenVerifyFetch.json();

@@ -28,7 +28,7 @@ async function initDotEnvForApp() {
         scriptId: 'initDotEnvForApp',
         scriptCategory: 'setup',
     });
-    logger.logStart('Hello Future World - Initialise .env file - start');
+    logger.logStart('Initialise .env file - start');
 
     // prompt for inputs
     const {
@@ -41,14 +41,13 @@ async function initDotEnvForApp() {
         logger.log('OK, overwriting .env file');
         const fileName = DEFAULT_VALUES.dotEnvFilePath;
         await fs.writeFile(fileName, dotEnvText);
-        logger.logComplete('Hello Future World - Initialise .env file, overwrite - complete');
+        logger.logComplete('Initialise .env file, overwrite - complete');
     } else {
-        logger.logComplete('Hello Future World - Initialise .env file, leave as-is - complete');
+        logger.logComplete('Initialise .env file, leave as-is - complete');
     }
 }
 
 function constructDotEnvFile({
-    yourName,
     operatorAccount,
     accounts,
     seedPhrase,
@@ -69,9 +68,6 @@ ACCOUNT_${accountIndex}_ID=${account.id}
 # Do **not** reuse or share any credentials from Hedera Mainnet,
 # as this file is stored as plain text on disk,
 # and is therefore not secure enough.
-
-# Name
-YOUR_NAME="${yourName}"
 
 # Operator account
 OPERATOR_ACCOUNT_PRIVATE_KEY=${operatorAccount.privateKey}
@@ -178,7 +174,6 @@ async function promptInputs() {
     } = process.env;
 
     let operatorAccount;
-    let yourName = YOUR_NAME;
     let operatorKey = OPERATOR_ACCOUNT_PRIVATE_KEY;
     let seedPhrase = SEED_PHRASE;
     let numAccounts = NUM_ACCOUNTS;
@@ -199,22 +194,6 @@ async function promptInputs() {
     do {
         restart = false;
         let use1stAccountAsOperator = false;
-
-        // prompt user for their preferred moniker
-        logger.log('Enter your pseudonym (note that this will be written on network)');
-        if (yourName) {
-            logger.log(`Current: "${yourName}"`);
-            logger.log('(enter blank to re-use the above value)');
-        } else {
-            logger.log('e.g. "bguiz"');
-        }
-        const inputYourName = await rlPrompt.question('> ');
-        yourName = inputYourName || yourName;
-        if (!yourName) {
-            console.error('Specified name is empty');
-            restart = true;
-            continue;
-        }
 
         // prompt for operator account private key
         // - user may opt for "none" in which case the 1st account
@@ -328,25 +307,6 @@ async function promptInputs() {
                 id: '',
             };
         }
-        if (use1stAccountAsOperator) {
-            // first, give user the opportunity to fund this account
-            logger.log(`Please ensure that you have funded ${accounts[0].evmAddress}`);
-            logger.log('If this account has not yet been created or funded, you may do so via https://faucet.hedera.com');
-            logger.log('(Simply enter a blank value to when this account is ready)');
-            await rlPrompt.question('> '); // discard the response, no use for it
-
-            // validate operator account details
-            try {
-                operatorAccount = await getUsableAccount(accounts[0].privateKey, accounts[0].evmAddress);
-            } catch (ex) {
-                // Fail fast here, as we know this account is non-functional in its present state
-                console.error(ex.message);
-                restart = true;
-                continue;
-            }
-
-            accounts[0].id = operatorAccount.id;
-        }
 
         // prompt for RPC URL
         // - defaults to localhost
@@ -367,13 +327,32 @@ async function promptInputs() {
             rpcUrl = inputRpcUrl;
         }
 
+        if (use1stAccountAsOperator) {
+            // first, give user the opportunity to fund this account
+            logger.log(`Please ensure that you have funded ${accounts[0].evmAddress}`);
+            logger.log('If this account has not yet been created or funded, you may do so via https://faucet.hedera.com');
+            logger.log('(Simply enter a blank value to when this account is ready)');
+            await rlPrompt.question('> '); // discard the response, no use for it
+
+            // validate operator account details
+            try {
+                operatorAccount = await getUsableAccount(accounts[0].privateKey, accounts[0].evmAddress);
+            } catch (ex) {
+                // Fail fast here, as we know this account is non-functional in its present state
+                console.error(ex.message);
+                restart = true;
+                continue;
+            }
+
+            accounts[0].id = operatorAccount.id;
+        }
+
         // prompt for user to overwrite the file `.env` file
         // - prints out the proposed file
         // - user may select "yes", "no", or "restart"
         // - if restart is selected, this loop with prompts is repeated,
         //   allowing user to update input values
         dotEnvText = constructDotEnvFile({
-            yourName,
             operatorAccount,
             accounts,
             seedPhrase,
@@ -394,7 +373,6 @@ async function promptInputs() {
     rlPrompt.close();
 
     return {
-        yourName,
         operatorAccount,
         seedPhrase,
         numAccounts,

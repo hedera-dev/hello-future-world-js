@@ -11,7 +11,6 @@ import {
 } from '@hashgraph/sdk';
 import dotenv from 'dotenv';
 import {
-    applyAnsi,
     convertTransactionIdForMirrorNodeApi,
     createLogger,
 } from '../util/util.js';
@@ -95,7 +94,7 @@ async function scriptTransferHbar() {
     const transferTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${transferTxId}`;
     logger.log(
         'Copy and paste this URL in your browser:\n',
-        ...applyAnsi('URL', transferTxVerifyHashscanUrl),
+        ...logger.applyAnsi('URL', transferTxVerifyHashscanUrl),
     );
 
     await logger.logSectionWithWaitPrompt('Get transfer transaction data from the Hedera Mirror Node');
@@ -108,7 +107,7 @@ async function scriptTransferHbar() {
     const transferTxVerifyMirrorNodeApiUrl = `https://testnet.mirrornode.hedera.com/api/v1/transactions/${transferTxIdMirrorNodeFormat}?nonce=0`;
     logger.log(
         'The transfer transaction Hedera Mirror Node API URL:\n',
-        ...applyAnsi('URL', transferTxVerifyMirrorNodeApiUrl),
+        ...logger.applyAnsi('URL', transferTxVerifyMirrorNodeApiUrl),
     );
 
     // The transfer transaction assessed transaction fee, debits, and credits in HBAR

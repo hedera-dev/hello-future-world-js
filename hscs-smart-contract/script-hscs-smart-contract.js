@@ -7,7 +7,6 @@ import { ContractFactory } from '@ethersproject/contracts';
 import dotenv from 'dotenv';
 import {
     CHARS,
-    applyAnsi,
     createLogger,
 } from '../util/util.js';
 
@@ -58,7 +57,7 @@ async function scriptHscsSmartContract() {
     logger.log('Deployed smart contract address:', myContractAddress);
     logger.log(
         'Deployed smart contract Hashscan URL:\n',
-        ...applyAnsi('URL', myContractHashscanUrl),
+        ...logger.applyAnsi('URL', myContractHashscanUrl),
     );
 
     // Write data to smart contract
@@ -72,7 +71,7 @@ async function scriptHscsSmartContract() {
     logger.log('Smart contract write transaction hash', scWriteTxHash);
     logger.log(
         'Smart contract write transaction Hashscan URL:\n',
-        ...applyAnsi('URL', scWriteTxHashscanUrl),
+        ...logger.applyAnsi('URL', scWriteTxHashscanUrl),
     );
 
     // Read data from smart contract
