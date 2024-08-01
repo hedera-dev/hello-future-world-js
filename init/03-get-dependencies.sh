@@ -3,6 +3,7 @@
 DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # install main dependencies
+echo "Installing main dependencies…"
 cd ${DIR}/..
 npm install
 
@@ -11,13 +12,12 @@ then
   gp sync-done get_dependencies_base
 fi
 
-# install additional dependencies
-cd ${DIR}/../hscs-smart-contract
-npm install
-
+# install additional dependencies, if defined by project
 cd ${DIR}
+[ -f ./03b-get-additional-dependencies.sh ] && ./03b-get-additional-dependencies.sh
 
 # get specific tag name for latest RPC relay
+cd ${DIR}
 export RPC_RELAY_VERSION=$( curl -L \
   -H "Accept: application/vnd.github+json" \
   -H "X-GitHub-Api-Version: 2022-11-28" \

@@ -3,6 +3,7 @@
 DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 cd ${DIR}/..
+npm install
 [ ! -f .env ] && cp .env.sample .env
 [ ! -f .rpcrelay.env ] && cp .rpcrelay.env.sample .rpcrelay.env
 [ ! -f logger.json ] && cp logger.json.sample logger.json

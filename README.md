@@ -289,17 +289,10 @@ Steps:
 - [x] make log outputs consistent in the HSCS output
 - [x] make order of hashscan URL and then mirror node API check consistent across all 4
 - [x] solidity file in HSCS HW - update the constant both var name and var value
-- [x] update `.env.sample` file to include all fields eventually generated
-- [x] update `logger.json.sample` file to include all fields
 - [x] rename `hfwId` to `scriptId` consistently
-- [x] separate time taken to complete first run and time taken to complete most recent run
-- [x] different icons when logging start, complete, error, and summary
-- [x] fix ANSI codes for colour and add BRIGHT (`\x1b[1m`) to make headings bold
-- [ ] ideate: commemorative completion task reward
 - [x] change literal amounts specified in constants in transfer HBAR script
 - [x] use existing accounts instead of lazy account creation in transfer HBAR script
 - [x] add note not using "anon" for public transactions
-
 
 ## Author
 
