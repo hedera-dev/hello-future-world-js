@@ -1,10 +1,10 @@
 {
   "config": {
-    "scriptCategory": "config",
+    "scriptCategory": "",
     "ansiDisabled": false,
     "metricsId": "",
-    "metricsHcsTopicId": "",
-    "metricsHcsTopicMemo": "",
+    "metricsHcsTopicId": "0.0.4573319",
+    "metricsHcsTopicMemo": "HFWV2",
     "metricsAccountId": "",
     "metricsAccountKey": "",
     "metricsHcsDisabled": false
