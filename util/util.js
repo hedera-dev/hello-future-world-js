@@ -15,7 +15,6 @@ const packageJson = require('../package.json');
 
 const DEFAULT_VALUES = {
     mainDotEnvFilePath: path.resolve(__dirname, '../.env'),
-    metricsDotEnvFilePath: path.resolve(__dirname, '../.metrics.env'),
     loggerFilePath: path.resolve(__dirname, '../logger.json'),
     gitRefsHeadMainFilePath: path.resolve(__dirname, '../.git/refs/heads/main'),
 };
@@ -505,12 +504,13 @@ async function logMetricsSummary(logger) {
         console.log('Errors thus far:', info.errors);
     });
 
-    console.log(
-        '\nView HCS metrics on HashScan:\n',
-        ...logger.applyAnsi('URL', `https://hashscan.io/testnet/topic/${loggerFile.config.metricsHcsTopicId}`),
-        `\nUsing the anonymised key: ${loggerFile.config.metricsId}`,
-
-    );
+    if (!logger?.config?.metricsHcsDisabled) {
+        console.log(
+            '\nView HCS metrics on HashScan:\n',
+            ...logger.applyAnsi('URL', `https://hashscan.io/testnet/topic/${loggerFile.config.metricsHcsTopicId}`),
+            `\nUsing the anonymised key: ${loggerFile.config.metricsId}`,
+        );
+    }
 
     return {
         timeToHelloWorld,

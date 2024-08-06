@@ -1,6 +1,6 @@
 {
   "config": {
-    "scriptCategory": "",
+    "scriptCategory": "config",
     "ansiDisabled": false,
     "metricsId": "",
     "metricsHcsTopicId": "0.0.4573319",
