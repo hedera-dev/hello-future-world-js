@@ -36,7 +36,7 @@ async function scriptHcsTopic() {
     client = Client.forTestnet().setOperator(operatorId, operatorKey);
     logger.log('Using account:', operatorIdStr);
 
-    // NOTE: Create a Hedera Consensus Service topic
+    // NOTE: Create a Hedera Consensus Service (HCS) topic
     // Step (1) in the accompanying tutorial
     await logger.logSectionWithWaitPrompt('Creating new HCS topic');
     const topicCreateTx = await new TopicCreateTransaction()
@@ -63,7 +63,7 @@ async function scriptHcsTopic() {
     const topicId = topicCreateTxReceipt.topicId;
     logger.log('topicId:', topicId.toString());
 
-    // NOTE: Publish a message to the HCS topic
+    // NOTE: Publish a message to the Hedera Consensus Service (HCS) topic
     // Step (2) in the accompanying tutorial
     const topicMsgSubmitTx = await new TopicMessageSubmitTransaction()
         //Set the transaction memo with the hello future world ID
