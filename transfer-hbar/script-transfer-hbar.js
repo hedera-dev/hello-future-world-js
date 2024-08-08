@@ -49,12 +49,12 @@ async function scriptTransferHbar() {
 
     const transferTx = await new TransferTransaction()
         .setTransactionMemo(`Hello Future World transfer - ${logger.version}`)
-        // Debit -10 hbar from the operator account (sender)
+        // Debit -10 HBAR from the operator account (sender)
         .addHbarTransfer(operatorId, new Hbar(-10, HbarUnit.Hbar))
-        // Credit 1 hbar to account 0.0.200 (1st recipient)
-        .addHbarTransfer('0.0.200', new Hbar(1, HbarUnit.Hbar))
-        // Credit 9 hbar to account 0.0.201 (2nd recipient)
-        .addHbarTransfer('0.0.201', new Hbar(9, HbarUnit.Hbar))
+        // Credit 5 HBAR to account 0.0.200 (1st recipient)
+        .addHbarTransfer('0.0.200', new Hbar(5, HbarUnit.Hbar))
+        // Credit 5 HBAR to account 0.0.201 (2nd recipient)
+        .addHbarTransfer('0.0.201', new Hbar(5, HbarUnit.Hbar))
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
 
@@ -63,8 +63,8 @@ async function scriptTransferHbar() {
     logger.log('The transfer transaction ID:', transferTxId.toString());
 
     // Sign the transaction with the account that is being debited (operator account) and the transaction fee payer account (operator account)
-    // Since the account that is being debited and the account that is paying for the transaction are the same only one accoun'ts signature is required
-    const transferTxSigned = await transferTx.sign(operatorKey);
+    // Since the account that is being debited and the account that is paying for the transaction are the same, only one account's signature is required
+for transferTxSigned = await transferTx.sign(operatorKey);
 
     //Submit the transaction to the Hedera Testnet
     const transferTxSubmitted = await transferTxSigned.execute(client);
