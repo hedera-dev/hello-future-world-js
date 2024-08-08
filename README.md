@@ -26,10 +26,10 @@ To run on your own computer, `git clone` this repo,
 and follow the instructions in the "pre-requisites" section of the accompanying tutorial.
 
 1. Install all the prerequisite software
-1. Run `./init/00-main.sh` and this script will interactively prompt you,
+1. Run `./util/00-main.sh` and this script will interactively prompt you,
    and populate the values needed in the `.env` file
-1. Run `./init/03-get-dependencies.sh` and this script will install the required dependencies
-1. Run `./init/04-rpcrelay-run.sh` and this script will run a Hedera JSON-RPC Relay instance
+1. Run `./util/03-get-dependencies.sh` and this script will install the required dependencies
+1. Run `./util/04-rpcrelay-run.sh` and this script will run a Hedera JSON-RPC Relay instance
    - Note that this requires `docker` to be available on your system
    - Note that you may delay performing this step until later,
      you only need it for HSCS related sequences

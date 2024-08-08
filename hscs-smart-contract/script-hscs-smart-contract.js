@@ -31,11 +31,11 @@ async function scriptHscsSmartContract() {
         throw new Error('Must set OPERATOR_ACCOUNT_ID, OPERATOR_ACCOUNT_PRIVATE_KEY, and RPC_URL environment variables');
     }
 
-    logger.logSection('Initialising operator account');
+    logger.logSection('Initializing operator account');
     const rpcProvider = new JsonRpcProvider(rpcUrl);
     const operatorWallet = new Wallet(operatorKeyStr, rpcProvider);
     const operatorAddress = operatorWallet.address;
-    logger.log('Operator account initialised:', operatorAddress);
+    logger.log('Operator account initialized:', operatorAddress);
 
     // Compile smart contract
     await logger.logSectionWithWaitPrompt('Reading compiled smart contract artefacts');
