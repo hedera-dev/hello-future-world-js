@@ -56,20 +56,26 @@ async function scriptHtsFungibleToken() {
         .setTreasuryAccountId(operatorId)
         // Set the freeze default value to false
         .setFreezeDefault(false)
-        // Sign the transaction with the operator account key and submit to the network
-        .execute(client);
+        //Freeze the transaction and prepare for signing
+        .freezeWith(client);
 
     // Get the transaction ID of the transaction. The SDK automatically generates and assigns a transaction ID when the transaction is created
     const tokenCreateTxId = tokenCreateTx.transactionId;
     logger.log('The token create transaction ID: ',
         tokenCreateTxId.toString());
 
+    //Sign the transaction with the private key of the treasury account(operator key)
+    const tokenCreateTxSigned = await tokenCreateTx.sign(operatorKey);
+
+    // Submit the transaction to the Hedera Testnet
+    const tokenCreateTxSubmitted = await tokenCreateTxSigned.execute(client);
+
     // Get the transaction receipt
-    const tokenCreateTxReceipt = await tokenCreateTx.getReceipt(client);
+    const tokenCreateTxReceipt = await tokenCreateTxSubmitted.getReceipt(client);
 
     // Get the token ID
     const tokenId = tokenCreateTxReceipt.tokenId;
-    logger.log('tokenId:', tokenId.toString());
+    logger.log("tokenId:", tokenId.toString());
 
     client.close();
 
