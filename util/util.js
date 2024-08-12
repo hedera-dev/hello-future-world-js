@@ -15,7 +15,6 @@ const packageJson = require('../package.json');
 
 const DEFAULT_VALUES = {
     mainDotEnvFilePath: path.resolve(__dirname, '../.env'),
-    metricsDotEnvFilePath: path.resolve(__dirname, '../.metrics.env'),
     loggerFilePath: path.resolve(__dirname, '../logger.json'),
     gitRefsHeadMainFilePath: path.resolve(__dirname, '../.git/refs/heads/main'),
 };
@@ -50,6 +49,7 @@ const hashSha256 = crypto.createHash('sha256');
 async function createLogger({
     scriptId,
     scriptCategory,
+    skipHcsTopicValidation,
 }) {
     if (typeof scriptId !== 'string' ||
         scriptId.length < 2 ||
@@ -107,7 +107,7 @@ async function createLogger({
         stats: loggerStatsPrev,
     };
 
-    await initLoggerConfig(logger);
+    await initLoggerConfig(logger, skipHcsTopicValidation);
 
     function log(...strings) {
         logger.step += 1;
@@ -292,7 +292,7 @@ async function createLogger({
     return logger;
 }
 
-async function initLoggerConfig(logger) {
+async function initLoggerConfig(logger, skipHcsTopicValidation) {
     const tempEnv = {};
 
     // read in main .env file
@@ -324,8 +324,8 @@ async function initLoggerConfig(logger) {
     const metricsHcsDisabled =
         loggerFile?.config?.metricsHcsDisabled || false;
 
-    if (!metricsHcsTopicMemo ||
-        !metricsHcsTopicId
+    if (!skipHcsTopicValidation &&
+        (!metricsHcsTopicMemo || !metricsHcsTopicId)
     ) {
         throw new Error('Invalid config in logger.json');
     }
@@ -504,12 +504,13 @@ async function logMetricsSummary(logger) {
         console.log('Errors thus far:', info.errors);
     });
 
-    console.log(
-        '\nView HCS metrics on HashScan:\n',
-        ...logger.applyAnsi('URL', `https://hashscan.io/testnet/topic/${loggerFile.config.metricsHcsTopicId}`),
-        `\nUsing the anonymised key: ${loggerFile.config.metricsId}`,
-
-    );
+    if (!logger?.config?.metricsHcsDisabled) {
+        console.log(
+            '\nView HCS metrics on HashScan:\n',
+            ...logger.applyAnsi('URL', `https://hashscan.io/testnet/topic/${loggerFile.config.metricsHcsTopicId}`),
+            `\nUsing the anonymised key: ${loggerFile.config.metricsId}`,
+        );
+    }
 
     return {
         timeToHelloWorld,
@@ -588,14 +589,11 @@ async function queryAccountByPrivateKey(privateKeyStr) {
     }
 }
 
-async function metricsTopicCreate(logger) {
+async function metricsTopicCreate(logger, metricsHcsTopicMemo) {
     const {
         client,
         metricsAccountKeyObj,
     } = logger;
-    const {
-        metricsHcsTopicMemo,
-    } = logger.config;
 
     const topicCreateTx = await new TopicCreateTransaction()
         .setTopicMemo(metricsHcsTopicMemo)
@@ -606,8 +604,13 @@ async function metricsTopicCreate(logger) {
     const metricsHcsTopicId = topicCreateTxReceipt.topicId;
     console.log('Metrics HCS topic ID:', metricsHcsTopicId.toString());
 
+    logger.config.metricsHcsTopicId = metricsHcsTopicId.toString();
+    logger.config.metricsHcsTopicMemo = metricsHcsTopicMemo.toString();
+
     // save/ overwrite config file
     await writeLoggerFile(logger);
+
+    return logger.config;
 }
 
 const metricsMessages = [];
