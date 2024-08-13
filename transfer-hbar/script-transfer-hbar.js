@@ -115,7 +115,7 @@ async function scriptTransferHbar() {
     const transferJsonAccountTransfersFinalAmounts = transferJsonAccountTransfers
         ?.map((obj) => Hbar.from(obj.amount, HbarUnit.Tinybar).toString(HbarUnit.Hbar));
     logger.log(
-        'The debit and credit amounts of the transfer transaction:\n',
+        'The debit, credit, and transaction fee amounts of the transfer transaction:\n',
         transferJsonAccountTransfersFinalAmounts
       );
 
