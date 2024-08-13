@@ -64,7 +64,7 @@ async function scriptHtsFungibleToken() {
     logger.log('The token create transaction ID: ',
         tokenCreateTxId.toString());
 
-    //Sign the transaction with the private key of the treasury account(operator key)
+    // Sign the transaction with the private key of the treasury account (operator key)
     const tokenCreateTxSigned = await tokenCreateTx.sign(operatorKey);
 
     // Submit the transaction to the Hedera Testnet
@@ -75,7 +75,7 @@ async function scriptHtsFungibleToken() {
 
     // Get the token ID
     const tokenId = tokenCreateTxReceipt.tokenId;
-    logger.log("tokenId:", tokenId.toString());
+    logger.log('tokenId:', tokenId.toString());
 
     client.close();
 
