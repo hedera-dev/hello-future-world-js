@@ -64,7 +64,7 @@ async function scriptTransferHbar() {
 
     // Sign the transaction with the account that is being debited (operator account) and the transaction fee payer account (operator account)
     // Since the account that is being debited and the account that is paying for the transaction are the same, only one account's signature is required
-for transferTxSigned = await transferTx.sign(operatorKey);
+const transferTxSigned = await transferTx.sign(operatorKey);
 
     //Submit the transaction to the Hedera Testnet
     const transferTxSubmitted = await transferTxSigned.execute(client);
