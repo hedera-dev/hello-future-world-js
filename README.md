@@ -64,11 +64,12 @@ What you will accomplish:
 1. Generate accounts using a BIP-39 seed phrase (optional)
 1. Fund one of those accounts using the Hedera Testnet Faucet (optional)
 
+Video:
+
+[![](https://i.ytimg.com/vi/RcL_wO2HseE/maxresdefault.jpg)](https://www.youtube.com/watch?v=RcL_wO2HseE&list=PLjyCRcs63y80w30q5EsBDOBZ_B04p1Vgc&index=2)
+
 Steps:
 
-1. Enter pseudonym
-   - Input any value, can be fictional/ anonymous/ etc
-   - Note that this will be written on the network
 1. Enter private key
    - Option 1: Input `none`.
      This will mean that an account generated from a seed phrase will be used (later).
@@ -125,6 +126,10 @@ What you will accomplish:
    - The response is parsed to obtain the amounts transferred.
 1. View the transfer transaction page in HashScan (the network explorer)
 
+Video:
+
+[![](https://i.ytimg.com/vi/gsmRFqsNTQQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=gsmRFqsNTQQ&list=PLjyCRcs63y80w30q5EsBDOBZ_B04p1Vgc&index=3)
+
 Steps:
 
 1. In the code editor, Open the file `transfer-hbar/script-transfer-hbar.js`.
@@ -166,6 +171,10 @@ What you will accomplish:
 1. Send an HTTP request to a Mirror Node API to query the transaction
    - The response is parsed to obtain the name and total supply of the token.
 1. View the token page in HashScan (the network explorer)
+
+Video:
+
+[![](https://i.ytimg.com/vi/xh3Nj3MVVMI/maxresdefault.jpg)](https://www.youtube.com/watch?v=xh3Nj3MVVMI&list=PLjyCRcs63y80w30q5EsBDOBZ_B04p1Vgc&index=4)
 
 Steps:
 
@@ -209,6 +218,10 @@ What you will accomplish:
    - The response is parsed to obtain the messages in the topic.
 1. View the topic page in HashScan (the network explorer)
 
+Video:
+
+[![](https://i.ytimg.com/vi/YSQmwesKDGA/maxresdefault.jpg)](https://www.youtube.com/watch?v=YSQmwesKDGA&list=PLjyCRcs63y80w30q5EsBDOBZ_B04p1Vgc&index=5)
+
 Steps:
 
 1. In the code editor, Open the file `hcs-topic/script-hcs-topic.js`.
@@ -251,6 +264,10 @@ What you will accomplish:
      as this accesses the state of (data stored in) the smart contract,
      without updating it.
 
+Video:
+
+[![](https://i.ytimg.com/vi/OjAjVw5SKaA/maxresdefault.jpg)](https://www.youtube.com/watch?v=OjAjVw5SKaA&list=PLjyCRcs63y80w30q5EsBDOBZ_B04p1Vgc&index=6)
+
 Steps:
 
 1. In the code editor, open the files
@@ -273,6 +290,12 @@ Steps:
      Note that the anonymised key is simply a randomly generated hexadecimal string.
 
 ### Tear down
+
+Video:
+
+[![](https://i.ytimg.com/vi/R_lKW2nwG94/maxresdefault.jpg)](https://www.youtube.com/watch?v=R_lKW2nwG94&list=PLjyCRcs63y80w30q5EsBDOBZ_B04p1Vgc&index=7&pp=iAQB)
+
+Steps:
 
 1. If you ran this via Gitpod, be sure to "stop workspace".
    - You may do so via the menu within the browser-based IDE.

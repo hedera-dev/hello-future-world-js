@@ -36,8 +36,6 @@ async function scriptHtsFungibleToken() {
     client = Client.forTestnet().setOperator(operatorId, operatorKey);
     logger.log('Using account:', operatorIdStr);
 
-    //ToDo: Generate a new key for the token's adminKey
-
     // NOTE: Create a HTS token
     // Step (1) in the accompanying tutorial
     await logger.logSectionWithWaitPrompt('Creating new HTS token');
@@ -56,11 +54,9 @@ async function scriptHtsFungibleToken() {
         .setInitialSupply(1_000_000)
         // Configure token access permissions: treasury account, admin, freezing
         .setTreasuryAccountId(operatorId)
-        // Set the admin key of the the token to the operator account
-        .setAdminKey(operatorKey) //ToDo: replace with adminKey
         // Set the freeze default value to false
         .setFreezeDefault(false)
-        // Freeze the transaction to prepare for signing
+        //Freeze the transaction and prepare for signing
         .freezeWith(client);
 
     // Get the transaction ID of the transaction. The SDK automatically generates and assigns a transaction ID when the transaction is created
@@ -68,10 +64,8 @@ async function scriptHtsFungibleToken() {
     logger.log('The token create transaction ID: ',
         tokenCreateTxId.toString());
 
-    // Sign the transaction with the account key that will be paying for this transaction
+    // Sign the transaction with the private key of the treasury account (operator key)
     const tokenCreateTxSigned = await tokenCreateTx.sign(operatorKey);
-
-    //ToDo: Sign with the admin key
 
     // Submit the transaction to the Hedera Testnet
     const tokenCreateTxSubmitted = await tokenCreateTxSigned.execute(client);
