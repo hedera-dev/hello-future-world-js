@@ -49,12 +49,12 @@ async function scriptTransferHbar() {
 
     const transferTx = await new TransferTransaction()
         .setTransactionMemo(`Hello Future World transfer - ${logger.version}`)
-        // Debit 7.62607015 hbars from the operator account (sender)
-        .addHbarTransfer(operatorId, new Hbar(-762607015, HbarUnit.Tinybar))
-        // Credit 6.62607015 hbars to account 0.0.200 (1st recipient)
-        .addHbarTransfer('0.0.200', new Hbar(662607015, HbarUnit.Tinybar))
-        // Credit 1.00000000 hbars to account 0.0.201 (2nd recipient)
-        .addHbarTransfer('0.0.201', new Hbar(100000000, HbarUnit.Tinybar))
+        // Debit  3.00000000 hbars from the operator account (sender)
+        .addHbarTransfer(operatorId, new Hbar(-3_000_000_00, HbarUnit.Tinybar))
+        // Credit 1.00000000 hbars to account 0.0.200 (1st recipient)
+        .addHbarTransfer('0.0.200', new Hbar(1_000_000_00, HbarUnit.Tinybar))
+        // Credit 2.00000000 hbars to account 0.0.201 (2nd recipient)
+        .addHbarTransfer('0.0.201', new Hbar(2_000_000_00, HbarUnit.Tinybar))
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
 
