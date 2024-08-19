@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import {
     CHARS,
     createLogger,
+    calculateTransactionFeeFromViem,
 } from '../util/util.js';
 
 const logger = await createLogger({
@@ -49,14 +50,15 @@ async function scriptHscsSmartContract() {
     // Step (2) in the accompanying tutorial
     await logger.logSection('Deploying smart contract');
     const myContractFactory = new ContractFactory(abi, evmBytecode, operatorWallet);
-    const myContract = await myContractFactory.deploy();
-    await myContract.deployTransaction.wait();
-    const myContractAddress = myContract.address;
-    const myContractHashscanUrl = `https://hashscan.io/testnet/contract/${myContractAddress}`;
-    logger.log('Deployed smart contract address:', myContractAddress);
+    const deploymentTx = await myContractFactory.deploy();
+    const deploymentTxReceipt = await deploymentTx.deployTransaction.wait();
+    console.log('Smart contract deployment transaction fee', calculateTransactionFeeFromViem(deploymentTxReceipt));
+    const deploymentTxAddress = deploymentTxReceipt.address;
+    logger.log('Smart contract deployment address:', deploymentTxAddress);
+    const deploymentTxHashscanUrl = `https://hashscan.io/testnet/contract/${deploymentTxAddress}`;
     logger.log(
-        'Deployed smart contract Hashscan URL:\n',
-        ...logger.applyAnsi('URL', myContractHashscanUrl),
+        'Smart contract deployment Hashscan URL:\n',
+        ...logger.applyAnsi('URL', deploymentTxHashscanUrl),
     );
 
     // Write data to smart contract
@@ -65,6 +67,7 @@ async function scriptHscsSmartContract() {
     await logger.logSection('Write data to smart contract');
     const scWriteTxRequest = await myContract.functions.introduce(`${logger.version} - ${logger.scriptId}`);
     const scWriteTxReceipt = await scWriteTxRequest.wait();
+    logger.log('Smart contract write transaction fee', calculateTransactionFeeFromViem(scWriteTxReceipt));
     const scWriteTxHash = scWriteTxReceipt.transactionHash;
     const scWriteTxHashscanUrl = `https://hashscan.io/testnet/transaction/${scWriteTxHash}`;
     logger.log('Smart contract write transaction hash', scWriteTxHash);
