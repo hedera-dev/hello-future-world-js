@@ -316,6 +316,23 @@ Steps:
 - [x] change literal amounts specified in constants in transfer HBAR script
 - [x] use existing accounts instead of lazy account creation in transfer HBAR script
 - [x] add note not using "anon" for public transactions
+- [ ] set recipient accounts to 0.0.200 and 0.0.201
+- [ ] filter list of recipient accounts ('transferJsonAccountTransfersFinalAmounts')
+- [ ] calculate and display contract deployment and function call fees
+- [ ] rename directories to: transaction, hts, hcs, hscs
+
+In upstream base template repo
+
+- [x] investigate inconsistencies between account ID and EVM address -> modify SDK to make mirror node queries?
+  - added suggestion here: https://github.com/hashgraph/hedera-sdk-js/issues/2442#issuecomment-2295549639
+- [x] append a suffix '(latest)' to the one just completed in summary metrics
+- [x] 'Enter your operator account (hex encoded ECDSA) private key' plus validation of the key and account type
+- [x] refactor to rename 'logSectionWithWaitPrompt'
+- [x] log errors and restarts more clearly in dotenv setup script
+- [x] add script to run RPC relay via NPM instead of docker
+- [ ] investigate: docs as code/ SSOT for written tutorial
+- [ ] Q&A for npm pack and !/.gitignore
+
 
 ## Author
 
