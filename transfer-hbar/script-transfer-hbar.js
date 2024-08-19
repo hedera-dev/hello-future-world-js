@@ -44,7 +44,7 @@ async function scriptTransferHbar() {
 
     // NOTE: Transfer HBAR using TransferTransaction
     // Step (1) in the accompanying tutorial
-    await logger.logSectionWithWaitPrompt(
+    await logger.logSection(
         'Creating, signing, and submitting the transfer transaction');
 
     const transferTx = await new TransferTransaction()
@@ -88,14 +88,14 @@ async function scriptTransferHbar() {
     client.close();
 
     // View the transaction in HashScan
-    await logger.logSectionWithWaitPrompt('View the transfer transaction transaction in HashScan');
+    await logger.logSection('View the transfer transaction transaction in HashScan');
     const transferTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${transferTxId}`;
     logger.log(
         'Copy and paste this URL in your browser:\n',
         ...logger.applyAnsi('URL', transferTxVerifyHashscanUrl),
     );
 
-    await logger.logSectionWithWaitPrompt('Get transfer transaction data from the Hedera Mirror Node');
+    await logger.logSection('Get transfer transaction data from the Hedera Mirror Node');
 
     // Wait for 6s for record files (blocks) to propagate to mirror nodes
     await new Promise((resolve) => setTimeout(resolve, 6_000));

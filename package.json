@@ -1,7 +1,7 @@
 {
   "name": "hello-future-world-js",
-  "version": "0.2.0",
-  "description": "Hello World sequences for each Hedera service",
+  "version": "0.2.1",
+  "description": "Hello World sequences for Hedera services - core, HCS, HTS, HSCS",
   "main": "init.js",
   "scripts": {
     "update-from-base-template": "npx github:hedera-dev/hedera-tutorial-demo-base-template update",

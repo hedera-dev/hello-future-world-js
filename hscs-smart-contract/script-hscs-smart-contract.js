@@ -38,7 +38,7 @@ async function scriptHscsSmartContract() {
     logger.log('Operator account initialised:', operatorAddress);
 
     // Compile smart contract
-    await logger.logSectionWithWaitPrompt('Reading compiled smart contract artefacts');
+    await logger.logSection('Reading compiled smart contract artefacts');
     const abi = await fs.readFile(`${solidityFileName}.abi`, { encoding: 'utf8' });
     const evmBytecode = await fs.readFile(`${solidityFileName}.bin`, { encoding: 'utf8' });
     logger.log('Compiled smart contract ABI:', abi.substring(0, 32), CHARS.HELLIP);
@@ -47,7 +47,7 @@ async function scriptHscsSmartContract() {
     // Deploy smart contract
     // NOTE: Prepare smart contract for deployment
     // Step (2) in the accompanying tutorial
-    await logger.logSectionWithWaitPrompt('Deploying smart contract');
+    await logger.logSection('Deploying smart contract');
     const myContractFactory = new ContractFactory(abi, evmBytecode, operatorWallet);
     const myContract = await myContractFactory.deploy();
     await myContract.deployTransaction.wait();
@@ -62,7 +62,7 @@ async function scriptHscsSmartContract() {
     // Write data to smart contract
     // NOTE: Invoke a smart contract transaction
     // Step (3) in the accompanying tutorial
-    await logger.logSectionWithWaitPrompt('Write data to smart contract');
+    await logger.logSection('Write data to smart contract');
     const scWriteTxRequest = await myContract.functions.introduce(`${logger.version} - ${logger.scriptId}`);
     const scWriteTxReceipt = await scWriteTxRequest.wait();
     const scWriteTxHash = scWriteTxReceipt.transactionHash;
@@ -76,7 +76,7 @@ async function scriptHscsSmartContract() {
     // Read data from smart contract
     // NOTE: Invoke a smart contract query
     // Step (4) in the accompanying tutorial
-    await logger.logSectionWithWaitPrompt('Read data from smart contract');
+    await logger.logSection('Read data from smart contract');
     const [scReadQueryResult] = await myContract.functions.greet();
     logger.log('Smart contract read query result:', scReadQueryResult);
 
