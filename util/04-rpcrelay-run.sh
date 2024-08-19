@@ -10,7 +10,7 @@ export RPC_RELAY_VERSION=$( curl -L \
   jq -r ".[].tag_name" |
   cut -c2-
 )
-echo "RPC Relay version: ${RPC_RELAY_VERSION}"
+echo "🟣 RPC Relay version: ${RPC_RELAY_VERSION}"
 export RPC_RELAY_DOCKER_IMAGE="ghcr.io/hashgraph/hedera-json-rpc-relay:${RPC_RELAY_VERSION}"
 
 # run the RPC relay via its docker image

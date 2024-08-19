@@ -2,14 +2,14 @@
 # To run on gitpod open https://gitpod.io/?autostart=false# followed by the github URL of your project
 # e.g. https://gitpod.io/?autostart=false#https://github.com/hedera-dev/hedera-tutorial-demo-base-template
 tasks:
-  - name: "rpcrelay_pull"
+  - name: 'get_deps'
     init: |
-      bash ./util/03-rpcrelay-pull.sh
-  - name: "rpcrelay_run"
+      bash ./util/03-get-dependencies.sh
+  - name: 'rpcrelay_run'
     init: |
       gp sync-await main
       bash ./util/04-rpcrelay-run.sh
-  - name: "main"
+  - name: 'main'
     init: |
       (
         set -e
@@ -18,15 +18,15 @@ tasks:
         gp sync-done main
       )
 ports:
-  - name: "rpcrelay"
+  - name: 'rpcrelay'
     onOpen: notify
     port: 7546
     visibility: public
-  - name: "rpcrelay_ws"
+  - name: 'rpcrelay_ws'
     onOpen: ignore
     port: 8546
     visibility: public
-  - name: "rpcrelay_admin"
+  - name: 'rpcrelay_admin'
     onOpen: ignore
     port: 8547
     visibility: public
