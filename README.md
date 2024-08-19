@@ -320,7 +320,7 @@ Steps:
 - [x] filter list of recipient accounts ('transferJsonAccountTransfersFinalAmounts')
 - [x] change one of the transfer amounts from 6.62607015 to 2.0
 - [x] calculate and display contract deployment and function call fees
-- [ ] rename directories to: transaction, hts, hcs, hscs
+- [x] rename directories to: transfer, hts, hcs, hscs
 
 In upstream base template repo
 

@@ -50,10 +50,11 @@ async function scriptHscsSmartContract() {
     // Step (2) in the accompanying tutorial
     await logger.logSection('Deploying smart contract');
     const myContractFactory = new ContractFactory(abi, evmBytecode, operatorWallet);
-    const deploymentTx = await myContractFactory.deploy();
-    const deploymentTxReceipt = await deploymentTx.deployTransaction.wait();
+    const myContract = await myContractFactory.deploy();
+    const deployTx = myContract.deployTransaction;
+    const deploymentTxReceipt = await deployTx.wait();
     console.log('Smart contract deployment transaction fee', calculateTransactionFeeFromViem(deploymentTxReceipt));
-    const deploymentTxAddress = deploymentTxReceipt.address;
+    const deploymentTxAddress = myContract.address;
     logger.log('Smart contract deployment address:', deploymentTxAddress);
     const deploymentTxHashscanUrl = `https://hashscan.io/testnet/contract/${deploymentTxAddress}`;
     logger.log(
