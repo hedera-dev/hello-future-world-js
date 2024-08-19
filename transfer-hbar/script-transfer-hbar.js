@@ -112,12 +112,30 @@ async function scriptTransferHbar() {
     const transferFetch = await fetch(transferTxVerifyMirrorNodeApiUrl);
     const transferJson = await transferFetch.json();
     const transferJsonAccountTransfers = transferJson?.transactions[0]?.transfers;
+    // console.log(transferJsonAccountTransfers);
     const transferJsonAccountTransfersFinalAmounts = transferJsonAccountTransfers
-        ?.map((obj) => Hbar.from(obj.amount, HbarUnit.Tinybar).toString(HbarUnit.Hbar));
+        ?.filter((entry) => {
+            // Discard all entries whose values are less than 0.1 hbars
+            // as these are network fees
+            return (Math.abs(entry.amount) >= 100_000_00);
+        })
+        ?.sort((entryA, entryB) => {
+            return entryA.amount - entryB.amount;
+        })
+        ?.map((entry) => {
+            return {
+                'Account ID': entry.account,
+                'Amount': Hbar.from(entry.amount, HbarUnit.Tinybar).toString(HbarUnit.Hbar),
+            };
+        });
     logger.log(
-        'The debit, credit, and transaction fee amounts of the transfer transaction:\n',
-        transferJsonAccountTransfersFinalAmounts
+        'The debit, credit, and transaction fee amounts of the transfer transaction:',
       );
+    if (typeof console.table === 'function') {
+        console.table(transferJsonAccountTransfersFinalAmounts);
+    } else {
+        console.log(transferJsonAccountTransfersFinalAmounts);
+    }
 
     logger.logComplete('Hello Future World - Transfer Hbar - complete');
 }
