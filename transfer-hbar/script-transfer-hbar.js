@@ -51,10 +51,10 @@ async function scriptTransferHbar() {
         .setTransactionMemo(`Hello Future World transfer - ${logger.version}`)
         // Debit 7.62607015 hbars from the operator account (sender)
         .addHbarTransfer(operatorId, new Hbar(-762607015, HbarUnit.Tinybar))
-        // Credit 6.62607015 hbars to account 0.0.1 (1st recipient)
-        .addHbarTransfer('0.0.1', new Hbar(662607015, HbarUnit.Tinybar))
-        // Credit 1.00000000 hbars to account 0.0.2 (2nd recipient)
-        .addHbarTransfer('0.0.2', new Hbar(100000000, HbarUnit.Tinybar))
+        // Credit 6.62607015 hbars to account 0.0.200 (1st recipient)
+        .addHbarTransfer('0.0.200', new Hbar(662607015, HbarUnit.Tinybar))
+        // Credit 1.00000000 hbars to account 0.0.201 (2nd recipient)
+        .addHbarTransfer('0.0.201', new Hbar(100000000, HbarUnit.Tinybar))
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
 

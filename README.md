@@ -316,7 +316,7 @@ Steps:
 - [x] change literal amounts specified in constants in transfer HBAR script
 - [x] use existing accounts instead of lazy account creation in transfer HBAR script
 - [x] add note not using "anon" for public transactions
-- [ ] set recipient accounts to 0.0.200 and 0.0.201
+- [x] set recipient accounts to 0.0.200 and 0.0.201
 - [ ] filter list of recipient accounts ('transferJsonAccountTransfersFinalAmounts')
 - [ ] calculate and display contract deployment and function call fees
 - [ ] rename directories to: transaction, hts, hcs, hscs
