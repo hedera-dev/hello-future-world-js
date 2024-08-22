@@ -10,6 +10,7 @@
         "solc": "0.8.17"
     },
     "scripts": {
+        "compile-smart-contract": "npx solc@0.8.17 --abi --bin my_contract.sol",
         "test": "echo 'no tests yet'"
     }
 }

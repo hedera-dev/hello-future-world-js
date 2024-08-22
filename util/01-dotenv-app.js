@@ -323,7 +323,8 @@ async function promptInputs() {
       `Please ensure that you have funded ${operatorAccountEvmAddress}`,
     );
     logger.log(
-      'If this account has not yet been created or funded, you may do so via https://faucet.hedera.com',
+      'If this account has not yet been created or funded, you may do so via',
+      ...logger.applyAnsi('URL', 'https://faucet.hedera.com'),
     );
     logger.log('(Simply enter a blank value to when this account is ready)');
     await rlPrompt.question('> '); // discard the response, no use for it
