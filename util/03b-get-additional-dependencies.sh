@@ -4,5 +4,5 @@ DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # install additional dependencies
 echo "Installing additional dependencies…"
-cd ${DIR}/../hscs-smart-contract
+cd ${DIR}/../hscs
 npm install
