@@ -26,10 +26,10 @@ To run on your own computer, `git clone` this repo,
 and follow the instructions in the "pre-requisites" section of the accompanying tutorial.
 
 1. Install all the prerequisite software
-1. Run `./init/00-main.sh` and this script will interactively prompt you,
+1. Run `./util/00-main.sh` and this script will interactively prompt you,
    and populate the values needed in the `.env` file
-1. Run `./init/03-get-dependencies.sh` and this script will install the required dependencies
-1. Run `./init/04-rpcrelay-run.sh` and this script will run a Hedera JSON-RPC Relay instance
+1. Run `./util/03-get-dependencies.sh` and this script will install the required dependencies
+1. Run `./util/04-rpcrelay-run.sh` and this script will run a Hedera JSON-RPC Relay instance
    - Note that this requires `docker` to be available on your system
    - Note that you may delay performing this step until later,
      you only need it for HSCS related sequences
@@ -316,6 +316,24 @@ Steps:
 - [x] change literal amounts specified in constants in transfer HBAR script
 - [x] use existing accounts instead of lazy account creation in transfer HBAR script
 - [x] add note not using "anon" for public transactions
+- [x] set recipient accounts to 0.0.200 and 0.0.201
+- [x] filter list of recipient accounts ('transferJsonAccountTransfersFinalAmounts')
+- [x] change one of the transfer amounts from 6.62607015 to 2.0
+- [x] calculate and display contract deployment and function call fees
+- [x] rename directories to: transfer, hts, hcs, hscs
+
+In upstream base template repo
+
+- [x] investigate inconsistencies between account ID and EVM address -> modify SDK to make mirror node queries?
+  - added suggestion here: https://github.com/hashgraph/hedera-sdk-js/issues/2442#issuecomment-2295549639
+- [x] append a suffix '(latest)' to the one just completed in summary metrics
+- [x] 'Enter your operator account (hex encoded ECDSA) private key' plus validation of the key and account type
+- [x] refactor to rename 'logSectionWithWaitPrompt'
+- [x] log errors and restarts more clearly in dotenv setup script
+- [x] add script to run RPC relay via NPM instead of docker
+- [ ] investigate: docs as code/ SSOT for written tutorial
+- [ ] Q&A for npm pack and !/.gitignore
+
 
 ## Author
 

@@ -12,6 +12,8 @@ const {
   AccountId,
   TopicCreateTransaction,
   TopicMessageSubmitTransaction,
+  Hbar,
+  HbarUnit,
 } = require('@hashgraph/sdk');
 const packageJson = require('../package.json');
 
@@ -701,6 +703,12 @@ function isHexPrivateKey(str) {
   return true;
 }
 
+function calculateTransactionFeeFromViem(txReceipt) {
+  const { gasUsed, effectiveGasPrice } = txReceipt;
+  const txFee = BigInt(gasUsed) * BigInt(effectiveGasPrice) / 10_000_000_000n;
+  return Hbar.from(txFee, HbarUnit.Tinybar).toString(HbarUnit.Hbar);
+}
+
 function getAbiSummary(abi) {
   const abiByType = new Map();
   abi.forEach((item) => {
@@ -866,6 +874,7 @@ module.exports = {
   queryAccountByEvmAddress,
   queryAccountByPrivateKey,
   isHexPrivateKey,
+  calculateTransactionFeeFromViem,
   getAbiSummary,
   verifyOnSourcify,
   metricsTopicCreate,

@@ -49,12 +49,12 @@ async function scriptTransferHbar() {
 
     const transferTx = await new TransferTransaction()
         .setTransactionMemo(`Hello Future World transfer - ${logger.version}`)
-        // Debit 7.62607015 hbars from the operator account (sender)
-        .addHbarTransfer(operatorId, new Hbar(-762607015, HbarUnit.Tinybar))
-        // Credit 6.62607015 hbars to account 0.0.1 (1st recipient)
-        .addHbarTransfer('0.0.1', new Hbar(662607015, HbarUnit.Tinybar))
-        // Credit 1.00000000 hbars to account 0.0.2 (2nd recipient)
-        .addHbarTransfer('0.0.2', new Hbar(100000000, HbarUnit.Tinybar))
+        // Debit  3 HBAR from the operator account (sender)
+        .addHbarTransfer(operatorId, new Hbar(-3, HbarUnit.Hbar))
+        // Credit 1 HBAR to account 0.0.200 (1st recipient)
+        .addHbarTransfer('0.0.200', new Hbar(1, HbarUnit.Hbar))
+        // Credit 2 HBAR to account 0.0.201 (2nd recipient)
+        .addHbarTransfer('0.0.201', new Hbar(2, HbarUnit.Hbar))
         // Freeze the transaction to prepare for signing
         .freezeWith(client);
 
@@ -63,8 +63,8 @@ async function scriptTransferHbar() {
     logger.log('The transfer transaction ID:', transferTxId.toString());
 
     // Sign the transaction with the account that is being debited (operator account) and the transaction fee payer account (operator account)
-    // Since the account that is being debited and the account that is paying for the transaction are the same only one accoun'ts signature is required
-    const transferTxSigned = await transferTx.sign(operatorKey);
+    // Since the account that is being debited and the account that is paying for the transaction are the same, only one account's signature is required
+const transferTxSigned = await transferTx.sign(operatorKey);
 
     //Submit the transaction to the Hedera Testnet
     const transferTxSubmitted = await transferTxSigned.execute(client);
@@ -112,12 +112,30 @@ async function scriptTransferHbar() {
     const transferFetch = await fetch(transferTxVerifyMirrorNodeApiUrl);
     const transferJson = await transferFetch.json();
     const transferJsonAccountTransfers = transferJson?.transactions[0]?.transfers;
+    // console.log(transferJsonAccountTransfers);
     const transferJsonAccountTransfersFinalAmounts = transferJsonAccountTransfers
-        ?.map((obj) => Hbar.from(obj.amount, HbarUnit.Tinybar).toString(HbarUnit.Hbar));
+        ?.filter((entry) => {
+            // Discard all entries whose values are less than 0.1 hbars
+            // as these are network fees
+            return (Math.abs(entry.amount) >= 100_000_00);
+        })
+        ?.sort((entryA, entryB) => {
+            return entryA.amount - entryB.amount;
+        })
+        ?.map((entry) => {
+            return {
+                'Account ID': entry.account,
+                'Amount': Hbar.from(entry.amount, HbarUnit.Tinybar).toString(HbarUnit.Hbar),
+            };
+        });
     logger.log(
-        'The debit, credit, and transaction fee amounts of the transfer transaction:\n',
-        transferJsonAccountTransfersFinalAmounts
+        'The debit, credit, and transaction fee amounts of the transfer transaction:',
       );
+    if (typeof console.table === 'function') {
+        console.table(transferJsonAccountTransfersFinalAmounts);
+    } else {
+        console.log(transferJsonAccountTransfersFinalAmounts);
+    }
 
     logger.logComplete('Hello Future World - Transfer Hbar - complete');
 }
