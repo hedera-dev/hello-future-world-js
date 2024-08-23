@@ -38,6 +38,11 @@ async function scriptHscsSmartContract() {
     const operatorAddress = operatorWallet.address;
     logger.log('Operator account initialized:', operatorAddress);
 
+    //Set the default maximum transaction fee (in Hbar)
+    client.setDefaultMaxTransactionFee(new Hbar(100));
+    //Set the maximum payment for queries (in Hbar)
+    client.setDefaultMaxQueryPayment(new Hbar(50));
+
     // Compile smart contract
     await logger.logSection('Reading compiled smart contract artefacts');
     const abi = await fs.readFile(`${solidityFileName}.abi`, { encoding: 'utf8' });
