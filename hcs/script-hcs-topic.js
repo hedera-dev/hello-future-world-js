@@ -36,6 +36,11 @@ async function scriptHcsTopic() {
     client = Client.forTestnet().setOperator(operatorId, operatorKey);
     logger.log('Using account:', operatorIdStr);
 
+    //Set the default maximum transaction fee (in Hbar)
+    client.setDefaultMaxTransactionFee(new Hbar(100));
+    //Set the maximum payment for queries (in Hbar)
+    client.setDefaultMaxQueryPayment(new Hbar(50));
+
     // NOTE: Create a Hedera Consensus Service (HCS) topic
     // Step (1) in the accompanying tutorial
     await logger.logSection('Creating new HCS topic');
