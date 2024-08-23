@@ -42,6 +42,12 @@ async function scriptTransferHbar() {
     // The client operator ID and key is the account that will be automatically set to pay for the transaction fees for each transaction
     client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
+    //Set the default maximum transaction fee (in Hbar)
+    client.setDefaultMaxTransactionFee(new Hbar(100));
+
+    //Set the maximum payment for queries (in Hbar)
+    client.setDefaultMaxQueryPayment(new Hbar(50));
+
     // NOTE: Transfer HBAR using TransferTransaction
     // Step (1) in the accompanying tutorial
     await logger.logSection(
