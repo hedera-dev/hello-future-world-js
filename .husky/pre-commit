@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# format code using prettier
+FILES_FOR_PRETTIER=$(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g')
+if [ -n "${FILES_FOR_PRETTIER}" ] ; then
+    echo "${FILES_FOR_PRETTIER}" | xargs ./node_modules/.bin/prettier --ignore-unknown --write
+    git add ${FILES_FOR_PRETTIER}
+fi
+
+exit 0

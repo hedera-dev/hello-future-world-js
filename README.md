@@ -10,9 +10,9 @@ To follow along, please read the **accompanying tutorial** at [docs.hedera.com](
 
 Note that this demo repo is also available in 3 programming languages:
 
-- [Javascript](https://github.com/hedera-dev/hello-future-world-js "Hello Future World - Javascript") (this repo)
-- [Java](https://github.com/hedera-dev/hello-future-world-java "Hello Future World - Java") (WIP)
-- [Go](https://github.com/hedera-dev/hello-future-world-go "Hello Future World - Go") (WIP)
+- [Javascript](https://github.com/hedera-dev/hello-future-world-js 'Hello Future World - Javascript') (this repo)
+- [Java](https://github.com/hedera-dev/hello-future-world-java 'Hello Future World - Java') (WIP)
+- [Go](https://github.com/hedera-dev/hello-future-world-go 'Hello Future World - Go') (WIP)
 
 ## How to run
 
@@ -333,7 +333,6 @@ In upstream base template repo
 - [x] add script to run RPC relay via NPM instead of docker
 - [ ] investigate: docs as code/ SSOT for written tutorial
 - [ ] Q&A for npm pack and !/.gitignore
-
 
 ## Author
 

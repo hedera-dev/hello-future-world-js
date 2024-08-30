@@ -6,7 +6,9 @@
   "scripts": {
     "update-from-base-template": "npx github:hedera-dev/hedera-tutorial-demo-base-template update",
     "scaffold-task-from-base-template": "npx github:hedera-dev/hedera-tutorial-demo-base-template scaffold-task",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "format": "prettier . --write --cache",
+    "test": "echo 'no tests yet'",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -26,5 +28,9 @@
   "dependencies": {
     "@hashgraph/sdk": "2.48.1",
     "dotenv": "16.4.5"
+  },
+  "devDependencies": {
+    "husky": "9.1.4",
+    "prettier": "3.3.3"
   }
 }
