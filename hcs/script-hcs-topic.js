@@ -38,7 +38,7 @@ async function scriptHcsTopic() {
 
   //Set the default maximum transaction fee (in HBAR)
   client.setDefaultMaxTransactionFee(new Hbar(100));
-  //Set the maximum payment for queries (in HBAR)
+  //Set the default maximum payment for queries (in HBAR)
   client.setDefaultMaxQueryPayment(new Hbar(50));
 
   // NOTE: Create a Hedera Consensus Service (HCS) topic
