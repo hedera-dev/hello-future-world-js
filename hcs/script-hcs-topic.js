@@ -23,7 +23,7 @@ async function scriptHcsTopic() {
   dotenv.config({ path: '../.env' });
   logger.log('Read .env file');
 
-  // Initialise the operator account
+  // Initialize the operator account
   const operatorIdStr = process.env.OPERATOR_ACCOUNT_ID;
   const operatorKeyStr = process.env.OPERATOR_ACCOUNT_PRIVATE_KEY;
   if (!operatorIdStr || !operatorKeyStr) {
@@ -36,8 +36,12 @@ async function scriptHcsTopic() {
   client = Client.forTestnet().setOperator(operatorId, operatorKey);
   logger.log('Using account:', operatorIdStr);
 
+  //Set the default maximum transaction fee (in HBAR)
+  client.setDefaultMaxTransactionFee(new Hbar(100));
+  //Set the maximum payment for queries (in HBAR)
+  client.setDefaultMaxQueryPayment(new Hbar(50));
+
   // NOTE: Create a Hedera Consensus Service (HCS) topic
-  // Step (1) in the accompanying tutorial
   await logger.logSection('Creating new HCS topic');
   const topicCreateTx = await new TopicCreateTransaction()
     .setTopicMemo(`Hello Future World topic - ${logger.version}`)
@@ -63,7 +67,6 @@ async function scriptHcsTopic() {
   logger.log('topicId:', topicId.toString());
 
   // NOTE: Publish a message to the Hedera Consensus Service (HCS) topic
-  // Step (2) in the accompanying tutorial
   const topicMsgSubmitTx = await new TopicMessageSubmitTransaction()
     //Set the transaction memo with the hello future world ID
     .setTransactionMemo(`Hello Future World topic message - ${logger.version}`)
@@ -98,7 +101,6 @@ async function scriptHcsTopic() {
   client.close();
 
   // NOTE: Verify transactions using Hashscan
-  // Step (3) in the accompanying tutorial
   // This is a manual step, the code below only outputs the URL to visit
 
   // View your topic on HashScan
@@ -113,7 +115,6 @@ async function scriptHcsTopic() {
   await new Promise((resolve) => setTimeout(resolve, 6_000));
 
   // NOTE: Verify topic using Mirror Node API
-  // Step (4) in the accompanying tutorial
   await logger.logSection('Get topic data from the Hedera Mirror Node');
   const topicVerifyMirrorNodeApiUrl = `https://testnet.mirrornode.hedera.com/api/v1/topics/${topicId.toString()}/messages?encoding=base64&limit=5&order=asc&sequencenumber=1`;
   logger.log(
