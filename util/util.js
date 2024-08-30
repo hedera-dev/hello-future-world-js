@@ -705,7 +705,7 @@ function isHexPrivateKey(str) {
 
 function calculateTransactionFeeFromViem(txReceipt) {
   const { gasUsed, effectiveGasPrice } = txReceipt;
-  const txFee = BigInt(gasUsed) * BigInt(effectiveGasPrice) / 10_000_000_000n;
+  const txFee = (BigInt(gasUsed) * BigInt(effectiveGasPrice)) / 10_000_000_000n;
   return Hbar.from(txFee, HbarUnit.Tinybar).toString(HbarUnit.Hbar);
 }
 
@@ -867,6 +867,7 @@ module.exports = {
   getVersionStamp,
   getBaseTemplateVersionStamp,
   createLogger,
+  readLoggerFile,
   writeLoggerFile,
   logMetricsSummary,
 

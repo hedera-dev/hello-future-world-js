@@ -185,7 +185,7 @@ async function promptInputs() {
         isValidatedSeedPhrase = false;
       }
       if (!isValidatedSeedPhrase) {
-        await logger.logError(
+        logger.logErrorWithoutClose(
           'Specified input is not a valid BIP-39 seed phrase',
         );
         restart = true;
@@ -291,7 +291,7 @@ async function promptInputs() {
       operatorKey = inputOperatorKey || operatorKey;
     }
     if (!operatorKey) {
-      await logger.logError('Must specify operator account private key');
+      logger.logErrorWithoutClose('Must specify operator account private key');
       restart = true;
       continue;
     }
@@ -304,7 +304,9 @@ async function promptInputs() {
     // A different public key and therefore EVM address will be generated,
     // and when detecting if that account has been funded, will then fail.
     if (!isHexPrivateKey(operatorKey)) {
-      await logger.logError('Must use operator key of hexadecimal format');
+      logger.logErrorWithoutClose(
+        'Must use operator key of hexadecimal format',
+      );
       restart = true;
       continue;
     }
@@ -337,7 +339,7 @@ async function promptInputs() {
       );
     } catch (ex) {
       // Fail fast here, as we know this account is non-functional in its present state
-      await logger.logError(ex.message);
+      logger.logErrorWithoutClose(ex.message);
       restart = true;
       continue;
     }
