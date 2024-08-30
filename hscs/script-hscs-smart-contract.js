@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Wallet } from '@ethersproject/wallet';
 import { ContractFactory } from '@ethersproject/contracts';
+import { Hbar, Client } from '@hashgraph/sdk';
 import dotenv from 'dotenv';
 import {
   CHARS,
@@ -39,6 +40,9 @@ async function scriptHscsSmartContract() {
   const operatorWallet = new Wallet(operatorKeyStr, rpcProvider);
   const operatorAddress = operatorWallet.address;
   logger.log('Operator account initialized:', operatorAddress);
+
+  // The client operator ID and key is the account that will be automatically set to pay for the transaction fees for each transaction
+  client = Client.forTestnet().setOperator(operatorIdStr, operatorKeyStr);
 
   //Set the default maximum transaction fee (in HBAR)
   client.setDefaultMaxTransactionFee(new Hbar(100));
