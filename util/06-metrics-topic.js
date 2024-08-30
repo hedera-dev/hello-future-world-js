@@ -13,7 +13,7 @@ async function initMetricsTopic() {
     scriptCategory: 'setup',
     skipHcsTopicValidation: true,
   });
-  logger.logStart('Initialise metrics topic - start');
+  logger.logStart('Initialize metrics topic - start');
 
   const [metricsHcsTopicMemo] = process.argv.slice(2);
   if (!metricsHcsTopicMemo) {
@@ -47,7 +47,7 @@ async function initMetricsTopic() {
   );
   await fs.writeFile(filePath, fileContents);
 
-  logger.logComplete('Initialise metrics topic - complete');
+  logger.logComplete('Initialize metrics topic - complete');
 }
 
 initMetricsTopic().catch((ex) => {

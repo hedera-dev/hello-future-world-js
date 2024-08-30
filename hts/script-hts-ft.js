@@ -23,7 +23,7 @@ async function scriptHtsFungibleToken() {
   dotenv.config({ path: '../.env' });
   logger.log('Read .env file');
 
-  // Initialise the operator account
+  // Initialize the operator account
   const operatorIdStr = process.env.OPERATOR_ACCOUNT_ID;
   const operatorKeyStr = process.env.OPERATOR_ACCOUNT_PRIVATE_KEY;
   if (!operatorIdStr || !operatorKeyStr) {
@@ -36,8 +36,12 @@ async function scriptHtsFungibleToken() {
   client = Client.forTestnet().setOperator(operatorId, operatorKey);
   logger.log('Using account:', operatorIdStr);
 
+  //Set the default maximum transaction fee (in HBAR)
+  client.setDefaultMaxTransactionFee(new Hbar(100));
+  //Set the default maximum payment for queries (in HBAR)
+  client.setDefaultMaxQueryPayment(new Hbar(50));
+
   // NOTE: Create a HTS token
-  // Step (1) in the accompanying tutorial
   await logger.logSection('Creating new HTS token');
   const tokenCreateTx = await new TokenCreateTransaction()
     //Set the transaction memo
@@ -79,7 +83,6 @@ async function scriptHtsFungibleToken() {
   client.close();
 
   // NOTE: Verify transactions using Hashscan
-  // Step (2) in the accompanying tutorial
   // This is a manual step, the code below only outputs the URL to visit
 
   // View your token on HashScan
@@ -94,7 +97,6 @@ async function scriptHtsFungibleToken() {
   await new Promise((resolve) => setTimeout(resolve, 6_000));
 
   // NOTE: Verify token using Mirror Node API
-  // Step (3) in the accompanying tutorial
   await logger.logSection('Get token data from the Hedera Mirror Node');
   const tokenVerifyMirrorNodeApiUrl = `https://testnet.mirrornode.hedera.com/api/v1/tokens/${tokenId.toString()}`;
   logger.log(

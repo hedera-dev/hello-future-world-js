@@ -36,7 +36,7 @@ async function initDotEnvForApp() {
     scriptId: 'initDotEnvForApp',
     scriptCategory: 'setup',
   });
-  logger.logStart('Initialise .env file - start');
+  logger.logStart('Initialize .env file - start');
 
   // prompt for inputs
   const { allowOverwrite1stChar, dotEnvText, accounts } = await promptInputs();
@@ -51,7 +51,7 @@ async function initDotEnvForApp() {
     logger.log('Leave as-is .env file');
   }
 
-  logger.logComplete('Initialise .env file - complete');
+  logger.logComplete('Initialize .env file - complete');
 }
 
 function constructDotEnvFile({
@@ -144,14 +144,14 @@ async function promptInputs() {
   do {
     if (restart) {
       console.error(
-        "\n❌ Invalid input values detected, the '.env' file has not been initialised.",
+        "\n❌ Invalid input values detected, the '.env' file has not been Initialized.",
       );
       logger.log('Restarting the interactive prompts', CHARS.HELLIP);
     }
     logger.logSectionWithoutWaitPrompt(
       'Please enter values requested, or accept defaults, in the interactive prompts below.',
     );
-    logger.log("These will be used to initialise the '.env' file.\n");
+    logger.log("These will be used to Initialize the '.env' file.\n");
 
     restart = false;
     let use1stAccountAsOperator = false;

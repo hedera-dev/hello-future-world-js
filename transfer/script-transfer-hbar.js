@@ -28,7 +28,7 @@ async function scriptTransferHbar() {
   dotenv.config({ path: '../.env' });
   logger.log('Read .env file');
 
-  // Initialise the operator account
+  // Initialize the operator account
   const operatorIdStr = process.env.OPERATOR_ACCOUNT_ID;
   const operatorKeyStr = process.env.OPERATOR_ACCOUNT_PRIVATE_KEY;
 
@@ -44,8 +44,12 @@ async function scriptTransferHbar() {
   // The client operator ID and key is the account that will be automatically set to pay for the transaction fees for each transaction
   client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
+  //Set the default maximum transaction fee (in HBAR)
+  client.setDefaultMaxTransactionFee(new Hbar(100));
+  //Set the default maximum payment for queries (in HBAR)
+  client.setDefaultMaxQueryPayment(new Hbar(50));
+
   // NOTE: Transfer HBAR using TransferTransaction
-  // Step (1) in the accompanying tutorial
   await logger.logSection(
     'Creating, signing, and submitting the transfer transaction',
   );
@@ -81,7 +85,6 @@ async function scriptTransferHbar() {
   );
 
   // NOTE: Query HBAR balance using AccountBalanceQuery
-  // Step (2) in the accompanying tutorial
   const newAccountBalance = new AccountBalanceQuery()
     .setAccountId('0.0.1')
     .execute(client);
