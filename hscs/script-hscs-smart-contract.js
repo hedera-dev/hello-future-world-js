@@ -24,7 +24,7 @@ async function scriptHscsSmartContract() {
   // Read in environment variables from `.env` file in parent directory
   dotenv.config({ path: '../.env' });
 
-  // Initialise the operator account
+  // Initialize the operator account
   const operatorIdStr = process.env.OPERATOR_ACCOUNT_ID;
   const operatorKeyStr = process.env.OPERATOR_ACCOUNT_PRIVATE_KEY;
   const rpcUrl = process.env.RPC_URL;
@@ -39,6 +39,11 @@ async function scriptHscsSmartContract() {
   const operatorWallet = new Wallet(operatorKeyStr, rpcProvider);
   const operatorAddress = operatorWallet.address;
   logger.log('Operator account initialized:', operatorAddress);
+
+  //Set the default maximum transaction fee (in HBAR)
+  client.setDefaultMaxTransactionFee(new Hbar(100));
+  //Set the default maximum payment for queries (in HBAR)
+  client.setDefaultMaxQueryPayment(new Hbar(50));
 
   // Compile smart contract
   await logger.logSection('Reading compiled smart contract artefacts');
@@ -61,7 +66,6 @@ async function scriptHscsSmartContract() {
 
   // Deploy smart contract
   // NOTE: Prepare smart contract for deployment
-  // Step (2) in the accompanying tutorial
   await logger.logSection('Deploying smart contract');
   const myContractFactory = new ContractFactory(
     abi,
@@ -85,7 +89,6 @@ async function scriptHscsSmartContract() {
 
   // Write data to smart contract
   // NOTE: Invoke a smart contract transaction
-  // Step (3) in the accompanying tutorial
   await logger.logSection('Write data to smart contract');
   const scWriteTxRequest = await myContract.functions.introduce(
     `${logger.version} - ${logger.scriptId}`,
@@ -105,7 +108,6 @@ async function scriptHscsSmartContract() {
 
   // Read data from smart contract
   // NOTE: Invoke a smart contract query
-  // Step (4) in the accompanying tutorial
   await logger.logSection('Read data from smart contract');
   const [scReadQueryResult] = await myContract.functions.greet();
   logger.log('Smart contract read query result:', scReadQueryResult);
