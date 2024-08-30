@@ -1,25 +1,25 @@
 #!/usr/bin/env node
 
-const fs = require("fs/promises");
-const path = require("path");
-const dotenv = require("dotenv");
-const { PrivateKey } = require("@hashgraph/sdk");
-const { createLogger } = require("../util/util.js");
+const fs = require('fs/promises');
+const path = require('path');
+const dotenv = require('dotenv');
+const { PrivateKey } = require('@hashgraph/sdk');
+const { createLogger } = require('../util/util.js');
 
 let logger;
 
 const DEFAULT_VALUES = {
-  dotEnvFilePath: path.resolve(__dirname, "../.rpcrelay.env"),
-  appDotEnvFilePath: path.resolve(__dirname, "../.env"),
+  dotEnvFilePath: path.resolve(__dirname, '../.rpcrelay.env'),
+  appDotEnvFilePath: path.resolve(__dirname, '../.env'),
 };
 
 async function initDotEnvForRpcRelay() {
   logger = await createLogger({
-    scriptId: "initDotEnvForRpcRelay",
-    scriptCategory: "setup",
+    scriptId: 'initDotEnvForRpcRelay',
+    scriptCategory: 'setup',
   });
   logger.logStart(
-    "Hello Future World - Initialize RPC Relay .env file - start"
+    'Hello Future World - Initialize RPC Relay .env file - start',
   );
 
   // read in initial values for env variables that have been set
@@ -30,7 +30,7 @@ async function initDotEnvForRpcRelay() {
   let operatorKey = OPERATOR_ACCOUNT_PRIVATE_KEY;
 
   if (!operatorId) {
-    console.error("Must define operator ID");
+    console.error('Must define operator ID');
     return;
   }
 
@@ -47,9 +47,9 @@ MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com/
   const fileName = DEFAULT_VALUES.dotEnvFilePath;
   await fs.writeFile(fileName, dotEnvText);
 
-  logger.log("OK, wrote .rpcrelay.env file");
+  logger.log('OK, wrote .rpcrelay.env file');
   logger.logComplete(
-    "Hello Future World - Initialize RPC Relay .env file - complete"
+    'Hello Future World - Initialize RPC Relay .env file - complete',
   );
 }
 

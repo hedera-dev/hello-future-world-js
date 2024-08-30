@@ -8,25 +8,25 @@ import {
   Hbar,
   HbarUnit,
   AccountBalanceQuery,
-} from "@hashgraph/sdk";
-import dotenv from "dotenv";
+} from '@hashgraph/sdk';
+import dotenv from 'dotenv';
 import {
   convertTransactionIdForMirrorNodeApi,
   createLogger,
-} from "../util/util.js";
+} from '../util/util.js';
 
 const logger = await createLogger({
-  scriptId: "transferHbar",
-  scriptCategory: "task",
+  scriptId: 'transferHbar',
+  scriptCategory: 'task',
 });
 let client;
 
 async function scriptTransferHbar() {
-  logger.logStart("Hello Future World - Transfer Hbar - start");
+  logger.logStart('Hello Future World - Transfer Hbar - start');
 
   // Read in environment variables from `.env` file in parent directory
-  dotenv.config({ path: "../.env" });
-  logger.log("Read .env file");
+  dotenv.config({ path: '../.env' });
+  logger.log('Read .env file');
 
   // Initialize the operator account
   const operatorIdStr = process.env.OPERATOR_ACCOUNT_ID;
@@ -34,12 +34,12 @@ async function scriptTransferHbar() {
 
   if (!operatorIdStr || !operatorKeyStr) {
     throw new Error(
-      "Must set YOUR_NAME, OPERATOR_ACCOUNT_ID, OPERATOR_ACCOUNT_PRIVATE_KEY"
+      'Must set YOUR_NAME, OPERATOR_ACCOUNT_ID, OPERATOR_ACCOUNT_PRIVATE_KEY',
     );
   }
   const operatorId = AccountId.fromString(operatorIdStr);
   const operatorKey = PrivateKey.fromStringECDSA(operatorKeyStr);
-  logger.log("Using account:", operatorIdStr);
+  logger.log('Using account:', operatorIdStr);
 
   // The client operator ID and key is the account that will be automatically set to pay for the transaction fees for each transaction
   client = Client.forTestnet().setOperator(operatorId, operatorKey);
@@ -51,7 +51,7 @@ async function scriptTransferHbar() {
 
   // NOTE: Transfer HBAR using TransferTransaction
   await logger.logSection(
-    "Creating, signing, and submitting the transfer transaction"
+    'Creating, signing, and submitting the transfer transaction',
   );
 
   const transferTx = await new TransferTransaction()
@@ -59,15 +59,15 @@ async function scriptTransferHbar() {
     // Debit  3 HBAR from the operator account (sender)
     .addHbarTransfer(operatorId, new Hbar(-3, HbarUnit.Hbar))
     // Credit 1 HBAR to account 0.0.200 (1st recipient)
-    .addHbarTransfer("0.0.200", new Hbar(1, HbarUnit.Hbar))
+    .addHbarTransfer('0.0.200', new Hbar(1, HbarUnit.Hbar))
     // Credit 2 HBAR to account 0.0.201 (2nd recipient)
-    .addHbarTransfer("0.0.201", new Hbar(2, HbarUnit.Hbar))
+    .addHbarTransfer('0.0.201', new Hbar(2, HbarUnit.Hbar))
     // Freeze the transaction to prepare for signing
     .freezeWith(client);
 
   // Get the transaction ID for the transfer transaction
   const transferTxId = transferTx.transactionId;
-  logger.log("The transfer transaction ID:", transferTxId.toString());
+  logger.log('The transfer transaction ID:', transferTxId.toString());
 
   // Sign the transaction with the account that is being debited (operator account) and the transaction fee payer account (operator account)
   // Since the account that is being debited and the account that is paying for the transaction are the same, only one account's signature is required
@@ -80,34 +80,34 @@ async function scriptTransferHbar() {
   const transferTxReceipt = await transferTxSubmitted.getReceipt(client);
   const transactionStatus = transferTxReceipt.status;
   logger.log(
-    "The transfer transaction status is:",
-    transactionStatus.toString()
+    'The transfer transaction status is:',
+    transactionStatus.toString(),
   );
 
   // NOTE: Query HBAR balance using AccountBalanceQuery
   const newAccountBalance = new AccountBalanceQuery()
-    .setAccountId("0.0.1")
+    .setAccountId('0.0.1')
     .execute(client);
   const newHbarBalance = (await newAccountBalance).hbars;
   logger.log(
-    "The new account balance after the transfer:",
-    newHbarBalance.toString()
+    'The new account balance after the transfer:',
+    newHbarBalance.toString(),
   );
 
   client.close();
 
   // View the transaction in HashScan
   await logger.logSection(
-    "View the transfer transaction transaction in HashScan"
+    'View the transfer transaction transaction in HashScan',
   );
   const transferTxVerifyHashscanUrl = `https://hashscan.io/testnet/transaction/${transferTxId}`;
   logger.log(
-    "Copy and paste this URL in your browser:\n",
-    ...logger.applyAnsi("URL", transferTxVerifyHashscanUrl)
+    'Copy and paste this URL in your browser:\n',
+    ...logger.applyAnsi('URL', transferTxVerifyHashscanUrl),
   );
 
   await logger.logSection(
-    "Get transfer transaction data from the Hedera Mirror Node"
+    'Get transfer transaction data from the Hedera Mirror Node',
   );
 
   // Wait for 6s for record files (blocks) to propagate to mirror nodes
@@ -118,8 +118,8 @@ async function scriptTransferHbar() {
     convertTransactionIdForMirrorNodeApi(transferTxId);
   const transferTxVerifyMirrorNodeApiUrl = `https://testnet.mirrornode.hedera.com/api/v1/transactions/${transferTxIdMirrorNodeFormat}?nonce=0`;
   logger.log(
-    "The transfer transaction Hedera Mirror Node API URL:\n",
-    ...logger.applyAnsi("URL", transferTxVerifyMirrorNodeApiUrl)
+    'The transfer transaction Hedera Mirror Node API URL:\n',
+    ...logger.applyAnsi('URL', transferTxVerifyMirrorNodeApiUrl),
   );
 
   // The transfer transaction assessed transaction fee, debits, and credits in HBAR
@@ -138,22 +138,22 @@ async function scriptTransferHbar() {
     })
     ?.map((entry) => {
       return {
-        "Account ID": entry.account,
+        'Account ID': entry.account,
         Amount: Hbar.from(entry.amount, HbarUnit.Tinybar).toString(
-          HbarUnit.Hbar
+          HbarUnit.Hbar,
         ),
       };
     });
   logger.log(
-    "The debit, credit, and transaction fee amounts of the transfer transaction:"
+    'The debit, credit, and transaction fee amounts of the transfer transaction:',
   );
-  if (typeof console.table === "function") {
+  if (typeof console.table === 'function') {
     console.table(transferJsonAccountTransfersFinalAmounts);
   } else {
     console.log(transferJsonAccountTransfersFinalAmounts);
   }
 
-  logger.logComplete("Hello Future World - Transfer Hbar - complete");
+  logger.logComplete('Hello Future World - Transfer Hbar - complete');
 }
 
 scriptTransferHbar().catch((ex) => {
