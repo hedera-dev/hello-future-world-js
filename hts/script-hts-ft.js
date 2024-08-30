@@ -36,6 +36,11 @@ async function scriptHtsFungibleToken() {
   client = Client.forTestnet().setOperator(operatorId, operatorKey);
   logger.log("Using account:", operatorIdStr);
 
+  //Set the default maximum transaction fee (in Hbar)
+  client.setDefaultMaxTransactionFee(new Hbar(100));
+  //Set the maximum payment for queries (in Hbar)
+  client.setDefaultMaxQueryPayment(new Hbar(50));
+
   // NOTE: Create a HTS token
   await logger.logSection("Creating new HTS token");
   const tokenCreateTx = await new TokenCreateTransaction()
