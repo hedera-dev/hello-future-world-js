@@ -2,9 +2,9 @@
 
 Demo repo for Hello World sequences to build on Hedera, using Javascript.
 
-> ⚠️ NOTE that this repo is still a work in progress,
-> and is therefore incomplete.
-> Sections are explicitly marked `(WIP)` as markers/ reminders.
+<a href="https://gitpod.io/?autostart=true&editor=code&workspaceClass=g1-standard#https://github.com/hedera-dev/hello-future-world-js" target="_blank" rel="noreferrer">
+  <img src="./img/gitpod-open-button.svg" />
+</a>
 
 To follow along, please read the **accompanying tutorial** at [docs.hedera.com](#TODO_LINK) (WIP).
 
@@ -13,6 +13,10 @@ Note that this demo repo is also available in 3 programming languages:
 - [Javascript](https://github.com/hedera-dev/hello-future-world-js 'Hello Future World - Javascript') (this repo)
 - [Java](https://github.com/hedera-dev/hello-future-world-java 'Hello Future World - Java') (WIP)
 - [Go](https://github.com/hedera-dev/hello-future-world-go 'Hello Future World - Go') (WIP)
+
+> ⚠️ NOTE that this repo is still a work in progress,
+> and is therefore incomplete.
+> Sections are explicitly marked `(WIP)` as markers/ reminders.
 
 ## How to run
 
