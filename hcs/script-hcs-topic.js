@@ -68,6 +68,7 @@ async function scriptHcsTopic() {
   logger.log('topicId:', topicId.toString());
 
   // NOTE: Publish a message to the Hedera Consensus Service (HCS) topic
+  await logger.logSection('Publish message to HCS topic');
   const topicMsgSubmitTx = await new TopicMessageSubmitTransaction()
     //Set the transaction memo with the hello future world ID
     .setTransactionMemo(`Hello Future World topic message - ${logger.version}`)
