@@ -363,6 +363,8 @@ async function createLogger({
           ANSI.RESET,
           CHARS.HELLIP,
         ];
+      case 'BOLD':
+        return [ANSI.BRIGHT, ...strings, ANSI.RESET];
       case 'URL':
         if (strings.length === 1 && typeof strings[0] === 'string') {
           return [
@@ -851,7 +853,7 @@ async function metricsTrackOnHcs(logger, { cat, v, action, detail, time }) {
         // const topicMsgSeqNum = topicMsgSubmitTxReceipt.topicSequenceNumber;
       } while (metricsMessages.length > 0);
     }
-    // When `client` is not Initialized, the `metricsMessage` is
+    // When `client` is not initialised, the `metricsMessage` is
     // already tracked in memory, and will be submitted to HCS at a later time
     // when `client` is available.
   } catch (ex) {

@@ -36,7 +36,7 @@ async function initDotEnvForApp() {
     scriptId: 'initDotEnvForApp',
     scriptCategory: 'setup',
   });
-  logger.logStart('Initialize .env file - start');
+  logger.logStart('Initialise .env file - start');
 
   // prompt for inputs
   const { allowOverwrite1stChar, dotEnvText, accounts } = await promptInputs();
@@ -51,7 +51,7 @@ async function initDotEnvForApp() {
     logger.log('Leave as-is .env file');
   }
 
-  logger.logComplete('Initialize .env file - complete');
+  logger.logComplete('Initialise .env file - complete');
 }
 
 function constructDotEnvFile({
@@ -144,14 +144,14 @@ async function promptInputs() {
   do {
     if (restart) {
       console.error(
-        "\n❌ Invalid input values detected, the '.env' file has not been Initialized.",
+        "\n❌ Invalid input values detected, the '.env' file has not been initialised.",
       );
       logger.log('Restarting the interactive prompts', CHARS.HELLIP);
     }
     logger.logSectionWithoutWaitPrompt(
       'Please enter values requested, or accept defaults, in the interactive prompts below.',
     );
-    logger.log("These will be used to Initialize the '.env' file.\n");
+    logger.log("These will be used to initialise the '.env' file.\n");
 
     restart = false;
     let use1stAccountAsOperator = false;
@@ -322,13 +322,14 @@ async function promptInputs() {
 
     // first, give user the opportunity to fund this account
     logger.log(
-      `Please ensure that you have funded ${operatorAccountEvmAddress}`,
+      'Please ensure that you have funded',
+      ...logger.applyAnsi('BOLD', operatorAccountEvmAddress),
     );
     logger.log(
       'If this account has not yet been created or funded, you may do so via',
       ...logger.applyAnsi('URL', 'https://faucet.hedera.com'),
     );
-    logger.log('(Simply enter a blank value to when this account is ready)');
+    logger.log('(Simply enter a blank value when this account is ready)');
     await rlPrompt.question('> '); // discard the response, no use for it
 
     // validate operator account details

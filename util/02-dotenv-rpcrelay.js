@@ -19,7 +19,7 @@ async function initDotEnvForRpcRelay() {
     scriptCategory: 'setup',
   });
   logger.logStart(
-    'Hello Future World - Initialize RPC Relay .env file - start',
+    'Hello Future World - Initialise RPC Relay .env file - start',
   );
 
   // read in initial values for env variables that have been set
@@ -49,7 +49,7 @@ MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com/
 
   logger.log('OK, wrote .rpcrelay.env file');
   logger.logComplete(
-    'Hello Future World - Initialize RPC Relay .env file - complete',
+    'Hello Future World - Initialise RPC Relay .env file - complete',
   );
 }
 
