@@ -2,6 +2,7 @@
 
 import {
   Client,
+  Hbar,
   PrivateKey,
   AccountId,
   TopicCreateTransaction,
