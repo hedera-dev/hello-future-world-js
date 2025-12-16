@@ -74,7 +74,7 @@ Steps:
    - Option 1: Input `none`.
      This will mean that an account generated from a seed phrase will be used (later).
    - Option 2: Input any ECDSA sec256k1 private key.
-     You may obtain this from [portal.hedera.com/dashboard](https://portal.hedera.com/dashboard).
+     You may obtain this from the [Hedera Portal](https://hubs.ly/Q03YhWjN0).
 1. Enter seed phrase
    - Option 1: Input nothing.
      This will generate a new seed BIP-39 phrase at random.
@@ -86,7 +86,7 @@ Steps:
      This tutorial requires at least 3 to be generated from the BIP-39 seed phrase.
 1. Please ensure that you have funded
    - To do so, copy the EVM address in the terminal output (starts with `0x`)
-   - Then visit [faucet.hedera.com](https://faucet.hedera.com/)
+   - Then visit the [Hedera Faucet](https://hubs.ly/Q03YhWjT0)
    - Paste the EVM address into the "Enter Wallet Address" text field
    - Press the "Receive…" button
    - Pass the reCaptcha ("I'm not a robot")
