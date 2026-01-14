@@ -37,12 +37,12 @@ async function scriptHtsFungibleToken() {
   client = Client.forTestnet().setOperator(operatorId, operatorKey);
   logger.log('Using account:', operatorIdStr);
 
-  //Set the default maximum transaction fee (in HBAR)
+  // Set the default maximum transaction fee (in HBAR)
   client.setDefaultMaxTransactionFee(new Hbar(100));
-  //Set the default maximum payment for queries (in HBAR)
+  // Set the default maximum payment for queries (in HBAR)
   client.setDefaultMaxQueryPayment(new Hbar(50));
 
-  // NOTE: Create a HTS token
+  // NOTE: Create an HTS token
   await logger.logSection('Creating new HTS token');
   const tokenCreateTx = await new TokenCreateTransaction()
     //Set the transaction memo
@@ -55,40 +55,42 @@ async function scriptHtsFungibleToken() {
     .setTokenSymbol(logger.scriptId.toUpperCase())
     // Set the token decimals to 2
     .setDecimals(2)
-    // Set the initial supply of the token to 1,000,000
+    // Set the initial supply to 1,000,000
     .setInitialSupply(1_000_000)
-    // Configure token access permissions: treasury account, admin, freezing
+    // Set the treasury account to the operator account. Configure token access permissions: treasury account, admin, freezing
     .setTreasuryAccountId(operatorId)
     // Set the freeze default value to false
     .setFreezeDefault(false)
     //Freeze the transaction and prepare for signing
     .freezeWith(client);
-
   // Get the transaction ID of the transaction. The SDK automatically generates and assigns a transaction ID when the transaction is created
   const tokenCreateTxId = tokenCreateTx.transactionId;
   logger.log('The token create transaction ID: ', tokenCreateTxId.toString());
-
   // Sign the transaction with the private key of the treasury account (operator key)
   const tokenCreateTxSigned = await tokenCreateTx.sign(operatorKey);
-
   // Submit the transaction to the Hedera Testnet
   const tokenCreateTxSubmitted = await tokenCreateTxSigned.execute(client);
 
-  // Get the transaction receipt
+  // Get the transaction receipt and check the status
   const tokenCreateTxReceipt = await tokenCreateTxSubmitted.getReceipt(client);
-
-  // Get the token ID
   const tokenId = tokenCreateTxReceipt.tokenId;
-  logger.log('tokenId:', tokenId.toString());
+  if (tokenCreateTxReceipt.status.toString() === 'SUCCESS') {
+    logger.log('✅ Token created successfully. Token ID:', tokenId.toString());
+    logger.log(
+      `Transaction was successful. View it at: https://hashscan.io/testnet/transaction/${tokenCreateTxId}`,
+    );
+  } else {
+    throw new Error(
+      `❌ Token creation transaction failed with status: ${tokenCreateTxReceipt.status}`,
+    );
+  }
 
   client.close();
 
-  // NOTE: Verify transactions using Hashscan
-  // This is a manual step, the code below only outputs the URL to visit
-
-  // View your token on HashScan
+  // Verify transactions using Hashscan
   await logger.logSection('View the token on HashScan');
-  const tokenVerifyHashscanUrl = `https://hashscan.io/testnet/token/${tokenId.toString()}`;
+  const tokenVerifyHashscanUrl = `https://hashscan.io/testnet/token/${tokenCreateTxReceipt.tokenId.toString()}`;
+
   logger.log(
     'Paste URL in browser:\n',
     ...logger.applyAnsi('URL', tokenVerifyHashscanUrl),
@@ -99,7 +101,8 @@ async function scriptHtsFungibleToken() {
 
   // NOTE: Verify token using Mirror Node API
   await logger.logSection('Get token data from the Hedera Mirror Node');
-  const tokenVerifyMirrorNodeApiUrl = `https://testnet.mirrornode.hedera.com/api/v1/tokens/${tokenId.toString()}`;
+
+  const tokenVerifyMirrorNodeApiUrl = `https://testnet.mirrornode.hedera.com/api/v1/tokens/${tokenCreateTxReceipt.tokenId.toString()}`;
   logger.log(
     'The token Hedera Mirror Node API URL:\n',
     ...logger.applyAnsi('URL', tokenVerifyMirrorNodeApiUrl),

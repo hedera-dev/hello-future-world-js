@@ -76,13 +76,20 @@ async function scriptTransferHbar() {
   //Submit the transaction to the Hedera Testnet
   const transferTxSubmitted = await transferTxSigned.execute(client);
 
-  //Get the transfer transaction receipt
+  // Check the transaction receipt
   const transferTxReceipt = await transferTxSubmitted.getReceipt(client);
   const transactionStatus = transferTxReceipt.status;
-  logger.log(
-    'The transfer transaction status is:',
-    transactionStatus.toString(),
-  );
+
+  if (transactionStatus.toString() === 'SUCCESS') {
+    logger.log('✅ The transfer transaction was successful.');
+    logger.log(
+      `View it at: https://hashscan.io/testnet/transaction/${transferTxId}`,
+    );
+  } else {
+    throw new Error(
+      `❌ The transfer transaction failed with status: ${transactionStatus}`,
+    );
+  }
 
   // NOTE: Query HBAR balance using AccountBalanceQuery
   const newAccountBalance = new AccountBalanceQuery()
