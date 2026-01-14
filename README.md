@@ -174,9 +174,9 @@ Video:
 
 Steps:
 
-1. In the code editor, Open the file `hts-ft/script-hts-ft.js`.
+1. In the code editor, Open the file `hts/script-hts-ft.js`.
 1. In the terminal, run these commands:
-   - `cd hts-ft`
+   - `cd hts`
    - `./script-hts-ft.js`
 1. View the summary statistics (optional)
    - The "time to first task completion" displays how long it took
@@ -218,9 +218,9 @@ Video:
 
 Steps:
 
-1. In the code editor, Open the file `hcs-topic/script-hcs-topic.js`.
+1. In the code editor, Open the file `hcs/script-hcs-topic.js`.
 1. In the terminal, run these commands:
-   - `cd hcs-topic`
+   - `cd hcs`
    - `./script-hcs-topic.js`
 1. View the summary statistics (optional)
    - The "time to first task completion" displays how long it took
@@ -263,10 +263,10 @@ Video:
 Steps:
 
 1. In the code editor, open the files
-   `hscs-smart-contract/script-hscs-smart-contract.js` and
-   `hscs-smart-contract/my_contract.sol`.
+   `hscs/script-hscs-smart-contract.js` and
+   `hscs/my_contract.sol`.
 1. In the terminal, run these commands:
-   - `cd hscs-smart-contract`
+   - `cd hscs`
    - `npm install`
    - `npx solc@0.8.17 --abi --bin my_contract.sol`
    - `./script-hscs-smart-contract.js`

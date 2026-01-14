@@ -70,7 +70,7 @@ async function scriptHscsSmartContract() {
   const myContract = await myContractFactory.deploy();
   const deployTx = myContract.deployTransaction;
   const deploymentTxReceipt = await deployTx.wait();
-  console.log(
+  logger.log(
     'Smart contract deployment transaction fee',
     calculateTransactionFeeFromViem(deploymentTxReceipt),
   );
